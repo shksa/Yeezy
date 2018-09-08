@@ -14,7 +14,7 @@ const (
 
 	// Delimiters
 	COMMA     = "COMMA"
-	SEMICOLAN = "SEMICOLAN"
+	SEMICOLON = "SEMICOLAN"
 
 	LPAREN = "LPAREN"
 	RPAREN = "RPAREN"
@@ -22,8 +22,8 @@ const (
 	RBRACE = "RBRACE"
 
 	// Keywords
-	FUNCTION = "func"
-	LET      = "let"
+	FUNCTION = "FUNCTION"
+	LET      = "LET"
 
 	// Identifiers + Literals
 	IDENT = "IDENT" // add, foobar, x, y, ...
@@ -33,3 +33,17 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 )
+
+// keywords table maps keyword literals to their token types
+var keywords = map[string]string{
+	"func": FUNCTION,
+	"let":  LET,
+}
+
+// TypeOfLetterString returns token type of the letter-string literal argument
+func TypeOfLetterString(literal string) string {
+	if tokenTypeOfKeyword, ok := keywords[literal]; ok {
+		return tokenTypeOfKeyword
+	}
+	return IDENT
+}
