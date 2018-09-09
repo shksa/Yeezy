@@ -31,6 +31,11 @@ var (
 	// Keywords
 	FUNCTION = Token{"FUNCTION", "func"}
 	LET      = Token{"LET", "let"}
+	IF       = Token{"IF", "if"}
+	ELSE     = Token{"ELSE", "else"}
+	RETURN   = Token{"RETURN", "return"}
+	TRUE     = Token{"TRUE", "true"}
+	FALSE    = Token{"FALSE", "false"}
 
 	// Identifiers + Literals
 	IDENTIFIER = Token{Type: "IDENTIFIER"} // add, foobar, x, y, ...
@@ -43,8 +48,13 @@ var (
 
 // keywords table maps all the keyword token literals to their token values
 var keywords = map[string]Token{
-	"func": FUNCTION,
-	"let":  LET,
+	"func":   FUNCTION,
+	"let":    LET,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
+	"true":   TRUE,
+	"false":  FALSE,
 }
 
 // GetTokenForLetterStringLiteral returns token for a letter-string literal.
