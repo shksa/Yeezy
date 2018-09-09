@@ -51,6 +51,8 @@ func (p *Parser) parseStatement() ast.StatementNode {
 	switch p.curToken {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -92,4 +94,17 @@ func (p *Parser) nextTokenIs(tok token.Token) bool {
 func (p *Parser) recordUnexpectedTokenError(expectedTok token.Token) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", expectedTok.Type, p.nextToken.Type)
 	p.Errors = append(p.Errors, msg)
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
+	stmt := &ast.ReturnStatementNode{Token: p.curToken}
+
+	p.readNextToken()
+
+	// TODO: SKIPPING THE EXPRESSIONS UNTILL A SEMICOLON IS ENCOUNTERED
+	for p.curToken != token.SEMICOLON {
+		p.readNextToken()
+	}
+
+	return stmt
 }

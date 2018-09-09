@@ -23,7 +23,7 @@ type ExpressionNode interface {
 // This Program node will be root of the AST.
 // Program is a type for representing the whole program tree
 type Program struct {
-	Statements []StatementNode // slice of AST nodes that implement the StatementNode interface
+	Statements []StatementNode // slice of AST node pointers that implement the StatementNode interface
 }
 
 // TokenLiteral returns the token literal of the first statement the program holds.
@@ -35,6 +35,12 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+/* NOTE
+1. A statement is identified with the token it starts with.
+	Example:- A let statement, starts with the LET token, A return statement, starts with the RETURN token.
+2. So a statement's node will contain the token that identifies that statement.
+*/
+
 // LetStatementNode is a type for representing all "let" statement nodes. ex:= `let x = 5 * 6`
 type LetStatementNode struct {
 	Token      token.Token // token.LET
@@ -42,6 +48,7 @@ type LetStatementNode struct {
 	Expression ExpressionNode
 }
 
+// *LetStatementNode implements StatementNode interface.
 func (ls *LetStatementNode) statementNode() {}
 
 // TokenLiteral returns the LetStatementNode's token literal.
@@ -55,9 +62,23 @@ type IdentifierNode struct {
 	Value string      // Value is the Token.Literal
 }
 
+// *LetStatementNode implements ExpressionNode interface.
 func (i *IdentifierNode) expressionNode() {}
 
 // TokenLiteral returns the IdentifierNode's token literal.
 func (i *IdentifierNode) TokenLiteral() string {
 	return i.Token.Literal
+}
+
+// ReturnStatementNode is a type for representing all "return" statement nodes. ex:- return 777
+type ReturnStatementNode struct {
+	Token       token.Token // token.RETURN
+	ReturnValue ExpressionNode
+}
+
+func (rs *ReturnStatementNode) statementNode() {}
+
+// TokenLiteral returns the ReturnStatementNode's token literal.
+func (rs *ReturnStatementNode) TokenLiteral() string {
+	return rs.Token.Literal
 }

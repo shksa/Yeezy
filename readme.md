@@ -17,9 +17,12 @@
 - The "abstract" is based on the fact that certain details visible in the source code are omitted in the AST. 
 - Semicolons, newlines, whitespace, comments, braces, bracket and parentheses -- depending on the language and the parser, these details are not represented in the AST, but merely guide the parser when constructing it.
 
-## Structure of programs in Monkey.
+## Statements and Expressions.
 - ***Programs in Monkey are a series of statements.***
-- A **let** statement has the form ```let <identifier> = <expression>```.
+- A **let** statement has the form ```let <identifier> = <expression>```
+- A **return** statement has the form ```return <expression>```
+- ***There are only 2 types of statements in Monkey, a let statement and a return statement***.
+- ***The rest of the language consists of expressions***.
 - **Statements vs Expressions**
     - Expressions produce values. ```ex:- 5, 10, add(5, 10)```
     - Statements do not produce values. ```ex:- return 5, let x = 5```
