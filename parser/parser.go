@@ -10,18 +10,40 @@ import (
 
 // Parser is a type for representing the parser object.
 type Parser struct {
-	l         *lexer.Lexer
-	curToken  token.Token
-	nextToken token.Token
-	Errors    []string
+	l                     *lexer.Lexer
+	curToken              token.Token
+	nextToken             token.Token
+	Errors                []string
+	ParseFnForPrefixToken map[string]prefixTokenParseFn
+	ParseFnForInfixToken  map[string]infixTokenParseFn
 }
 
 // New returns a pointer to a newly created Parser object.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l}
 	p.readNextToken()
-	p.readNextToken() // To set the curToken and the nextToken
+	p.readNextToken()                                             // To set the init value of curToken and the nextToken.
+	p.ParseFnForPrefixToken = make(map[string]prefixTokenParseFn) // Need to assign a non-nil map, otherwise cannot assign to a nil nap.
+	p.registerParseFuncForPrefixToken(token.IDENTIFIER, p.parseIdentifier)
 	return p
+}
+
+// These are the 2 types of parsing functions associated with a token.
+// prefixTokenParseFn is a function type that should be called when the associated token is in a prefix position.
+// infixTokenParseFn is a function type that should be called when the associated token is in a infix position.
+type (
+	prefixTokenParseFn func() ast.ExpressionNode
+	infixTokenParseFn  func(ast.ExpressionNode) ast.ExpressionNode
+)
+
+// registerParseFuncForPrefixToken adds entries to the parser's ParseFnForPrefixToken map.
+func (p *Parser) registerParseFuncForPrefixToken(tok token.Token, fn prefixTokenParseFn) {
+	p.ParseFnForPrefixToken[tok.Type] = fn
+}
+
+// registerParseFuncForInfixToken adds entries to the parser's ParseFnForInfixToken map.
+func (p *Parser) registerParseFuncForInfixToken(tok token.Token, fn infixTokenParseFn) {
+	p.ParseFnForInfixToken[tok.Type] = fn
 }
 
 func (p *Parser) readNextToken() {
@@ -54,7 +76,7 @@ func (p *Parser) parseStatement() ast.StatementNode {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -105,6 +127,47 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
 	for p.curToken != token.SEMICOLON {
 		p.readNextToken()
 	}
+	return stmt
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
+	stmt := &ast.ExpressionStatementNode{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.nextTokenIs(token.SEMICOLON) { // semicolon is optional
+		p.readNextToken()
+	}
 
 	return stmt
+}
+
+// Operator precedences. With these constants we can answer questions like :-
+// i) Does the * operator have a higher precedence than the == operator?
+// ii) Does a prefix operator have a higher preference than a call expression?
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // < or >
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X or !X
+	CALL        // myFunction(X)
+)
+
+// parseExpression does the following:-
+// 1. Checks whether the current token in prefix position has a parsing function associated with it.
+// 2. If it does, it calls the parsing function and that returns an expression node.
+func (p *Parser) parseExpression(precedence int) ast.ExpressionNode {
+	parseFn := p.ParseFnForPrefixToken[p.curToken.Type]
+	if parseFn == nil {
+		return nil
+	}
+	leftExpr := parseFn()
+
+	return leftExpr
+}
+
+func (p *Parser) parseIdentifier() ast.ExpressionNode {
+	return &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
 }

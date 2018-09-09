@@ -142,3 +142,10 @@ func (es *ExpressionStatementNode) statementNode() {}
 func (es *ExpressionStatementNode) TokenLiteral() string {
 	return es.Token.Literal
 }
+
+func (es *ExpressionStatementNode) String() string {
+	if es.Expression != nil {
+		return es.Expression.String()
+	}
+	return ""
+}

@@ -50,3 +50,13 @@
 
 ## Parsing expressions
 - **Top-Down Operator Precedence Parsing or Pratt parsing**
+    - The main idea of a Pratt's parser is that parsing functions are associated with token types.
+    - Whenever a particular token type is encountered, the associated parsing functions are called to parse the expression
+        and return an AST node that represents it.
+    - Each token type can have upto 2 parsing functions depending on whether the token is found in a infix or a prefix
+        position.
+- Types of expressions
+    - **Identifiers** 
+      - identifiers are expressions just like 1 + 2.
+      - identifiers produce values just like other expressions.
+      - identifiers evaluate to the value they are bound to.
