@@ -45,7 +45,12 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	switch l.ch {
 	case '=':
-		tok = token.ASSIGN
+		if l.peekNextChar() == '=' {
+			l.readNextChar()
+			tok = token.EQ
+		} else {
+			tok = token.ASSIGN
+		}
 	case '+':
 		tok = token.PLUS
 	case '-':
@@ -55,7 +60,12 @@ func (l *Lexer) NextToken() token.Token {
 	case '/':
 		tok = token.SLASH
 	case '!':
-		tok = token.BANG
+		if l.peekNextChar() == '=' {
+			l.readNextChar()
+			tok = token.NOTEQ
+		} else {
+			tok = token.BANG
+		}
 	case '(':
 		tok = token.LPAREN
 	case ')':
@@ -113,6 +123,14 @@ func (l *Lexer) skipWhiteSpace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readNextChar()
 	}
+}
+
+// peekNextChar returns the next char in the input without moving the position and updating the current char ch field of lexer.
+func (l *Lexer) peekNextChar() byte {
+	if l.nextPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.nextPosition]
 }
 
 // isLetter determines what characters can be used in identifiers and keywords

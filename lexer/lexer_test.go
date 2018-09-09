@@ -22,6 +22,8 @@ func TestNextToken(t *testing.T) {
 	} else {
 		return false;
 	}
+	5 == 5;
+	5 != 10;
 	`
 
 	// tests is a list of output expectations.
@@ -91,6 +93,14 @@ func TestNextToken(t *testing.T) {
 		token.FALSE,
 		token.SEMICOLON,
 		token.RBRACE,
+		{Type: "INT", Literal: "5"},
+		token.EQ,
+		{Type: "INT", Literal: "5"},
+		token.SEMICOLON,
+		{Type: "INT", Literal: "5"},
+		token.NOTEQ,
+		{Type: "INT", Literal: "10"},
+		token.SEMICOLON,
 		token.EOF,
 	}
 

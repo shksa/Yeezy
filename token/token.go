@@ -19,10 +19,14 @@ var (
 	LT = Token{"LT", "<"}
 	GT = Token{"GT", ">"}
 
+	EQ    = Token{"EQ", "=="}
+	NOTEQ = Token{"NOTEQ", "!="}
+
 	// Delimiters
 	COMMA     = Token{"COMMA", ","}
 	SEMICOLON = Token{"SEMICOLAN", ";"}
 
+	// Brackets
 	LPAREN = Token{"LPAREN", "("}
 	RPAREN = Token{"RPAREN", ")"}
 	LBRACE = Token{"LBRACE", "{"}
