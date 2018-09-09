@@ -17,6 +17,11 @@
 - The "abstract" is based on the fact that certain details visible in the source code are omitted in the AST. 
 - Semicolons, newlines, whitespace, comments, braces, bracket and parentheses -- depending on the language and the parser, these details are not represented in the AST, but merely guide the parser when constructing it.
 
+## Nodes in AST
+- Nodes in AST of Monkey can be of 2 types.
+    - **Statement**
+    - **Expression**
+
 ## Statements and Expressions.
 - ***Programs in Monkey are a series of statements.***
 - A **let** statement has the form ```let <identifier> = <expression>```
@@ -29,7 +34,19 @@
     - Depends on the language though.
 - **A lot of things in monkey are expressions including function literals**.
 
-## Nodes in AST
-- Nodes in AST of Monkey can be of 2 types.
-    - **Statement**
-    - **Expression**
+## Expression Statements
+- ***An expression statement is a top-level statement that consists solely of one expression.***
+- We need it because it's totally legal in Monkey to write the following
+    ```
+    let x = 5;
+    x * 5 + 10;
+    ```
+- The first line is a "let" statement.
+- The second line is a "expression" statement.
+- Most scripting languages have expression statements.
+- **They make it possible to have one line consisting only of an expression.**
+- **So this type of statement should be represented as it's own type of node in the AST.**
+
+
+## Parsing expressions
+- **Top-Down Operator Precedence Parsing or Pratt parsing**
