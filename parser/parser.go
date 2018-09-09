@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/shksa/monkey/ast"
 	"github.com/shksa/monkey/lexer"
 	"github.com/shksa/monkey/token"
@@ -11,11 +13,14 @@ type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	nextToken token.Token
+	Errors    []string
 }
 
 // New returns a pointer to a newly created Parser object.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l}
+	p.readNextToken()
+	p.readNextToken() // To set the curToken and the nextToken
 	return p
 }
 
@@ -29,7 +34,7 @@ func (p *Parser) readNextToken() {
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{} // root node of AST
 
-	for p.curToken != token.EOF {
+	for !p.curTokenIs(token.EOF) {
 		stmt := p.parseStatement()
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
@@ -55,6 +60,7 @@ func (p *Parser) parseStatement() ast.StatementNode {
 func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	stmt := &ast.LetStatementNode{Token: p.curToken}
 	if !p.nextTokenIs(token.IDENTIFIER) {
+		p.recordUnexpectedTokenError(token.IDENTIFIER)
 		return nil
 	}
 	p.readNextToken()
@@ -62,6 +68,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	stmt.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.nextTokenIs(token.ASSIGN) {
+		p.recordUnexpectedTokenError(token.ASSIGN)
 		return nil
 	}
 	p.readNextToken()
@@ -80,4 +87,9 @@ func (p *Parser) curTokenIs(tok token.Token) bool {
 
 func (p *Parser) nextTokenIs(tok token.Token) bool {
 	return p.nextToken.Type == tok.Type
+}
+
+func (p *Parser) recordUnexpectedTokenError(expectedTok token.Token) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", expectedTok.Type, p.nextToken.Type)
+	p.Errors = append(p.Errors, msg)
 }
