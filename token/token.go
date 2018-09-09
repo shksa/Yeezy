@@ -6,44 +6,53 @@ type Token struct {
 	Literal string
 }
 
-// List of all types of tokens in the language.
-const (
+// List of all tokens in the language.
+var (
 	// Operators
-	ASSIGN = "ASSIGN"
-	PLUS   = "PLUS"
+	ASSIGN   = Token{"ASSIGN", "="}
+	PLUS     = Token{"PLUS", "+"}
+	MINUS    = Token{"MINUS", "-"}
+	BANG     = Token{"BANG", "!"}
+	ASTERISK = Token{"ASTERISK", "*"}
+	SLASH    = Token{"SLASH", "/"}
+
+	LT = Token{"LT", "<"}
+	GT = Token{"GT", ">"}
 
 	// Delimiters
-	COMMA     = "COMMA"
-	SEMICOLON = "SEMICOLAN"
+	COMMA     = Token{"COMMA", ","}
+	SEMICOLON = Token{"SEMICOLAN", ";"}
 
-	LPAREN = "LPAREN"
-	RPAREN = "RPAREN"
-	LBRACE = "LBRACE"
-	RBRACE = "RBRACE"
+	LPAREN = Token{"LPAREN", "("}
+	RPAREN = Token{"RPAREN", ")"}
+	LBRACE = Token{"LBRACE", "{"}
+	RBRACE = Token{"RBRACE", "}"}
 
 	// Keywords
-	FUNCTION = "FUNCTION"
-	LET      = "LET"
+	FUNCTION = Token{"FUNCTION", "func"}
+	LET      = Token{"LET", "let"}
 
 	// Identifiers + Literals
-	IDENT = "IDENT" // add, foobar, x, y, ...
-	INT   = "INT"   // 23, 4343, 989898
+	IDENTIFIER = Token{Type: "IDENTIFIER"} // add, foobar, x, y, ...
+	INT        = Token{Type: "INT"}        // 23, 4343, 989898
 
 	// Special tokens
-	ILLEGAL = "ILLEGAL"
-	EOF     = "EOF"
+	ILLEGAL = Token{Type: "ILLEGAL"}
+	EOF     = Token{"EOF", ""}
 )
 
-// keywords table maps keyword literals to their token types
-var keywords = map[string]string{
+// keywords table maps all the keyword token literals to their token values
+var keywords = map[string]Token{
 	"func": FUNCTION,
 	"let":  LET,
 }
 
-// TypeOfLetterString returns token type of the letter-string literal argument
-func TypeOfLetterString(literal string) string {
-	if tokenTypeOfKeyword, ok := keywords[literal]; ok {
-		return tokenTypeOfKeyword
+// GetTokenForLetterStringLiteral returns token for a letter-string literal.
+func GetTokenForLetterStringLiteral(literal string) Token {
+	if keywordToken, ok := keywords[literal]; ok {
+		return keywordToken
 	}
-	return IDENT
+	identifierToken := IDENTIFIER
+	identifierToken.Literal = literal
+	return identifierToken
 }

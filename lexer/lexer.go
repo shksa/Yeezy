@@ -20,12 +20,12 @@ to "peek" further into the input and look after the current character to see wha
 // New returns a pointer to a newly created Lexer object.
 func New(input string) *Lexer {
 	lexer := &Lexer{input: input}
-	lexer.advance() // To initialize lexer.ch, lexer.postion, lexer.nextPosition
+	lexer.readNextChar() // To initialize lexer.ch, lexer.postion, lexer.nextPosition
 	return lexer
 }
 
-// The purpose of advance is to advance our position in the input string.
-func (l *Lexer) advance() {
+// readNextChar reads the next char in the input string and stores it in the lexer's current char (ch) field.
+func (l *Lexer) readNextChar() {
 	if l.nextPosition >= len(l.input) {
 		l.ch = 0 // 0 is the ASCII code for the "NUL" character and signifies either "we haven't read anything yet" or "end of file" for us.
 	} else {
@@ -45,56 +45,58 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	switch l.ch {
 	case '=':
-		tok.Type = token.ASSIGN
-		tok.Literal = string(l.ch)
+		tok = token.ASSIGN
 	case '+':
-		tok.Type = token.PLUS
-		tok.Literal = string(l.ch)
+		tok = token.PLUS
+	case '-':
+		tok = token.MINUS
+	case '*':
+		tok = token.ASTERISK
+	case '/':
+		tok = token.SLASH
+	case '!':
+		tok = token.BANG
 	case '(':
-		tok.Type = token.LPAREN
-		tok.Literal = string(l.ch)
+		tok = token.LPAREN
 	case ')':
-		tok.Type = token.RPAREN
-		tok.Literal = string(l.ch)
+		tok = token.RPAREN
 	case '{':
-		tok.Type = token.LBRACE
-		tok.Literal = string(l.ch)
+		tok = token.LBRACE
 	case '}':
-		tok.Type = token.RBRACE
-		tok.Literal = string(l.ch)
+		tok = token.RBRACE
 	case ',':
-		tok.Type = token.COMMA
-		tok.Literal = string(l.ch)
+		tok = token.COMMA
 	case ';':
-		tok.Type = token.SEMICOLON
-		tok.Literal = string(l.ch)
+		tok = token.SEMICOLON
+	case '<':
+		tok = token.LT
+	case '>':
+		tok = token.GT
 	case 0:
-		tok.Type = token.EOF
-		tok.Literal = ""
+		tok = token.EOF
 	default:
 		if isLetter(l.ch) {
-			tok.Literal = l.readLetterString()
-			tok.Type = token.TypeOfLetterString(tok.Literal)
+			letterStringLiteral := l.readLetterString()
+			tok = token.GetTokenForLetterStringLiteral(letterStringLiteral)
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = token.INT
+			tok = token.INT
 			tok.Literal = l.readNumber()
 			return tok
 		} else {
-			tok.Type = token.ILLEGAL
+			tok = token.ILLEGAL
 			tok.Literal = string(l.ch)
 		}
 	}
-	l.advance()
+	l.readNextChar()
 	return tok
 }
 
-// readLetterString returns an string of letters by advancing the lexer's position
-// if the current char is a letter untill a non-letter char is encountered.
+// readLetterString returns an string of letters from input source code
 func (l *Lexer) readLetterString() string {
 	position := l.position
 	for isLetter(l.ch) {
-		l.advance()
+		l.readNextChar()
 	}
 	return l.input[position:l.position]
 }
@@ -102,9 +104,15 @@ func (l *Lexer) readLetterString() string {
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for isDigit(l.ch) {
-		l.advance()
+		l.readNextChar()
 	}
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) skipWhiteSpace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readNextChar()
+	}
 }
 
 // isLetter determines what characters can be used in identifiers and keywords
@@ -114,10 +122,4 @@ func isLetter(ch byte) bool {
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
-}
-
-func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		l.advance()
-	}
 }
