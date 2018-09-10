@@ -78,13 +78,18 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{} // root node of AST
 
 	for !p.curTokenIs(token.EOF) {
-		stmt := p.parseStatement()
+		stmt := p.parseStatement() // At this point, p.curToken will be the start token of a new statement. <- IMP. INVARIANT
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
 		// For single-line inputs, at this point, p.nextToken is always token.EOF <- IMP. INVARIANT
+		// For multi-line inputs with semicolons,
+		//		p.curToken is always token.SEMICOLON <- IMP. INVARIANT
+		//		p.nextToken is the token at the start of the next line <- IMP. INVARIANT
 		p.readNextToken()
 		// For single-line inputs, at this point, p.curToken is always token.EOF <- IMP. INVARIANT
+		// For multi-line inputs with semicolons,
+		// 		p.curToken is always the token at the start of the next statement <- IMP. INVARIANT
 	}
 
 	return program
@@ -127,10 +132,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	p.readNextToken()
 
 	letStmtNode.Value = p.parseExpression(LOWEST)
-	// TODO: SKIPPING THE EXPRESSIONS UNTILL A SEMICOLON IS ENCOUNTERED
-	// for !p.curTokenIs(token.SEMICOLON) {
-	// 	p.readNextToken()
-	// }
+
 	if !p.nextTokenIs(token.SEMICOLON) {
 		p.unexpectedTokenError(token.SEMICOLON)
 		return nil
@@ -227,7 +229,7 @@ func (p *Parser) parseExpression(precedence int) ast.ExpressionNode {
 	// 1. If the left-binding power of the * token is greater than the right binding power of +,
 	//		then the node for 2 becomes the left arm of the infix expression with * as the infix operator.
 	// That means the parsed expression would be nested this way -> 1 + (2 * 3)
-	for !p.nextTokenIs(token.SEMICOLON) && precedence < p.nextTokenPrecedence() {
+	for !p.nextTokenIs(token.SEMICOLON) && precedence < p.nextTokenPrecedence() { // The next token can be a semicolon or a eof
 		infixParseFn := p.ParseFnForInfixToken[p.nextToken.Type]
 		if infixParseFn == nil {
 			return leftExprNode
