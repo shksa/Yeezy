@@ -30,9 +30,19 @@ func (l *Lexer) readNextChar() {
 		l.ch = 0 // 0 is the ASCII code for the "NUL" character and signifies either "we haven't read anything yet" or "end of file" for us.
 	} else {
 		l.ch = l.input[l.nextPosition]
-		l.position = l.nextPosition
-		l.nextPosition++ // l.nextPosition always points to the position where we're going to read from next.
 	}
+	// The below 2 statements SHOULD be placed outside the else clause for a very important reason.
+	// When readNextChar is called on the lexer when it is at the last char of the input,
+	// 1. l.position is len(input) - 1 and l.nextPosition is len(input)
+	// 2. after executing the func, l.ch should be '0' and,
+	// 3. l.position should be len(input) and l.nextPosition should be len(input) + 1.
+	// By doing so we can specify l.position as the upperbound in the slice of the input to get the last character from the input.
+	// readNextChar will be called again one final time before returning form l.NextToken with the token.EOF, At this point
+	// of time, l.position is len(input), l.nextPosition is len(input) + 1, after the function execution, l.ch will again be set
+	// to '0' because the if condition -> l.nextPosition > len(l.input) will be true and l.position will be incremented to
+	// len(input) + 1, and l.nextPositon will be len(input) + 2.
+	l.position = l.nextPosition
+	l.nextPosition++ // l.nextPosition always points to the position where we're going to read from next.
 }
 
 /*

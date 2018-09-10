@@ -22,10 +22,12 @@ func TestNextToken(t *testing.T) {
 	} else {
 		return false;
 	}
+	
 	5 == 5;
 	5 != 10;
+	let x = 788
 	`
-
+	// No semicolon for the last line
 	// tests is a list of output expectations.
 	tests := []token.Token{
 		token.LET,
@@ -101,6 +103,10 @@ func TestNextToken(t *testing.T) {
 		token.NOTEQ,
 		{Type: "INT", Literal: "10"},
 		token.SEMICOLON,
+		token.LET,
+		{Type: "IDENTIFIER", Literal: "x"},
+		token.ASSIGN,
+		{Type: "INT", Literal: "788"},
 		token.EOF,
 	}
 
@@ -121,8 +127,7 @@ func TestNextToken(t *testing.T) {
 
 func TestNextTokenSingleLineInput(t *testing.T) {
 	input := `
-	let five = 5;
-	`
+	let five = 5`
 
 	// tests is a list of output expectations.
 	tests := []token.Token{
@@ -130,7 +135,6 @@ func TestNextTokenSingleLineInput(t *testing.T) {
 		{Type: "IDENTIFIER", Literal: "five"},
 		token.ASSIGN,
 		{Type: "INT", Literal: "5"},
-		token.SEMICOLON,
 	}
 
 	lexer := New(input)
