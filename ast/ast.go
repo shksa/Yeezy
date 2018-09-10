@@ -12,13 +12,13 @@ type Node interface {
 	String() string
 }
 
-// StatementNode is an interface type for representing the interface of all statement nodes in the AST.
+// StatementNode is an interface type for representing all statement nodes in the AST.
 type StatementNode interface {
 	Node
 	statementNode()
 }
 
-// ExpressionNode is an interface type for representing the interface of all expression nodes in the AST.
+// ExpressionNode is an interface type for representing all expression nodes in the AST.
 type ExpressionNode interface {
 	Node
 	expressionNode()
@@ -48,7 +48,8 @@ func (p *Program) String() string {
 		out.WriteString(s.String())
 	}
 
-	return out.String()
+	outString := out.String()
+	return outString
 }
 
 /* NOTE
@@ -57,7 +58,7 @@ func (p *Program) String() string {
 2. So a statement's node will contain the token that identifies that statement.
 */
 
-// LetStatementNode is a type for representing all "let" statement nodes. ex:= `let x = 5 * 6`
+// LetStatementNode is a type for representing all "let" statements in AST. ex:= `let x = 5 * 6`
 type LetStatementNode struct {
 	Token token.Token // token.LET
 	Name  *IdentifierNode
@@ -83,10 +84,11 @@ func (ls *LetStatementNode) String() string {
 	}
 
 	out.WriteString(";")
-	return out.String()
+	outString := out.String()
+	return outString
 }
 
-// IdentifierNode is a type for representing all identifier nodes.
+// IdentifierNode is a type for representing all identifiers in AST.
 type IdentifierNode struct {
 	Token token.Token // token.IDENTIFIER
 	Value string      // Value is the Token.Literal
@@ -104,7 +106,7 @@ func (i *IdentifierNode) String() string {
 	return i.Value
 }
 
-// ReturnStatementNode is a type for representing all "return" statement nodes. ex:- return 777
+// ReturnStatementNode is a type for representing all "return" statements in AST. ex:- return 777
 type ReturnStatementNode struct {
 	Token       token.Token // token.RETURN
 	ReturnValue ExpressionNode
@@ -126,10 +128,11 @@ func (rs *ReturnStatementNode) String() string {
 		out.WriteString(rs.ReturnValue.String())
 	}
 	out.WriteString(";")
-	return out.String()
+	outString := out.String()
+	return outString
 }
 
-// ExpressionStatementNode is a type for representing all "expression" statement nodes. ex:- (in top-level) 5 * 5 + 10
+// ExpressionStatementNode is a type for representing all "expression" statements in AST. ex:- (in top-level) 5 * 5 + 10
 type ExpressionStatementNode struct {
 	Token      token.Token // The first token of the expression
 	Expression ExpressionNode
@@ -148,4 +151,75 @@ func (es *ExpressionStatementNode) String() string {
 		return es.Expression.String()
 	}
 	return ""
+}
+
+// IntegerLiteralNode is a type for representing all integer literals in AST.
+type IntegerLiteralNode struct {
+	Token token.Token // token.INT
+	Value int64
+}
+
+func (il *IntegerLiteralNode) expressionNode() {}
+
+// TokenLiteral returns the IntegerLiteralNode's token literal.
+func (il *IntegerLiteralNode) TokenLiteral() string {
+	return il.Token.Literal
+}
+
+func (il *IntegerLiteralNode) String() string {
+	return il.Token.Literal
+}
+
+// PrefixExpressionNode is a type for representing all "prefix" expressions in AST.
+type PrefixExpressionNode struct {
+	Token    token.Token    // The prefix token ex:- token.BANG or token.MINUS.
+	Operator string         // "!" or "-".
+	Right    ExpressionNode // expression to the right of the operator.
+}
+
+func (pe *PrefixExpressionNode) expressionNode() {}
+
+// TokenLiteral returns the PrefixExpressionNode's token literal.
+func (pe *PrefixExpressionNode) TokenLiteral() string {
+	return pe.Token.Literal
+}
+
+func (pe *PrefixExpressionNode) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(pe.Operator)
+	out.WriteString(pe.Right.String())
+	out.WriteString(")")
+
+	outString := out.String()
+	return outString
+}
+
+// InfixExpressionNode is a type for representing all "infix" expressions in AST.
+type InfixExpressionNode struct {
+	Token    token.Token // The operator token, for 5 + 10, it's token.PLUS
+	Left     ExpressionNode
+	Operator string
+	Right    ExpressionNode
+}
+
+func (ie *InfixExpressionNode) expressionNode() {}
+
+// TokenLiteral returns the InfixExpressionNode's token literal.
+func (ie *InfixExpressionNode) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+func (ie *InfixExpressionNode) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
+
+	outString := out.String()
+	return outString
 }

@@ -47,6 +47,13 @@
 - **They make it possible to have one line consisting only of an expression.**
 - **So this type of statement should be represented as it's own type of node in the AST.**
 
+## Making AST
+- **Tokens -> AST**
+- Tokens are parsed into nodes in AST.
+- A statement consists of a set of tokens, parser identifies the type of statement by looking at the
+    first token in the statement and and then builds the AST for that statement.
+- Tokens are parsed into their corresponding nodes and put in the AST.
+
 
 ## Parsing expressions
 - **Top-Down Operator Precedence Parsing or Pratt parsing**
@@ -57,6 +64,20 @@
         position.
 - Types of expressions
     - **Identifiers** 
-      - identifiers are expressions just like 1 + 2.
-      - identifiers produce values just like other expressions.
-      - identifiers evaluate to the value they are bound to.
+        - identifiers are expressions just like 1 + 2.
+        - identifiers produce values just like other expressions.
+        - identifiers evaluate to the value they are bound to.
+    - **Integer literals**
+        - The value they produce is the integer itself.
+    - **Prefix-Operators** or **Prefix-Expressions**
+        - There are 2 prefix operators in Monkey:- `!` and `-`.
+        - Usage:
+            ```
+            -5;
+            !foobar;
+            5 + -10;
+            ```
+        - They have form `<prefix operator><expression>;`
+        - **Any expression can follow a prefix operator as an operand.**
+    - **Infix-Expressions**
+        - They have the form `<expression> <infix-operator> <expression>`
