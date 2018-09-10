@@ -118,3 +118,32 @@ func TestNextToken(t *testing.T) {
 		}
 	}
 }
+
+func TestNextTokenSingleLineInput(t *testing.T) {
+	input := `
+	let five = 5;
+	`
+
+	// tests is a list of output expectations.
+	tests := []token.Token{
+		token.LET,
+		{Type: "IDENTIFIER", Literal: "five"},
+		token.ASSIGN,
+		{Type: "INT", Literal: "5"},
+		token.SEMICOLON,
+	}
+
+	lexer := New(input)
+
+	for i, expected := range tests {
+		tok := lexer.NextToken()
+		fmt.Printf("%q \n", tok.Literal)
+		if tok.Type != expected.Type {
+			t.Fatalf("tests[%d] - token.Type is wrong. expected %q, got %q", i, expected.Type, tok.Type)
+		}
+
+		if tok.Literal != expected.Literal {
+			t.Fatalf("tests[%d] - token.Literal is wrong. expected %q, got %q", i, expected.Literal, tok.Literal)
+		}
+	}
+}

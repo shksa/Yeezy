@@ -13,6 +13,8 @@ func TestLetStatements(t *testing.T) {
 	let x = 5;
 	let y = 10;
 	let foobar = 838383;
+	let youUgly = true;
+	let youFat = false;
 	`
 	l := lexer.New(input)
 	p := New(l)
@@ -22,17 +24,19 @@ func TestLetStatements(t *testing.T) {
 	if program == nil {
 		t.Fatalf("ParseProgram() returned nil")
 	}
-	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
+	if len(program.Statements) != 5 {
+		t.Fatalf("program.Statements does not contain 5 statements. got=%d", len(program.Statements))
 	}
 
 	tests := []struct {
 		expectedIdentifier string
-		expectedExpression int
+		expectedExpression interface{}
 	}{
 		{"x", 5},
 		{"y", 10},
 		{"foobar", 838383},
+		{"youUgly", true},
+		{"youFat", false},
 	}
 
 	for i, tt := range tests {
@@ -43,7 +47,7 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
-func testLetStatement(t *testing.T, stmt ast.StatementNode, name string, value int) bool {
+func testLetStatement(t *testing.T, stmt ast.StatementNode, name string, value interface{}) bool {
 	if stmt.TokenLiteral() != "let" {
 		t.Errorf("stmt.TokenLiteral not 'let'. got=%q", stmt.TokenLiteral())
 		return false
@@ -59,7 +63,7 @@ func testLetStatement(t *testing.T, stmt ast.StatementNode, name string, value i
 		return false
 	}
 
-	if !testIntegerLiteral(t, letStmt.Value, int64(value)) {
+	if !testLiteralExpression(t, letStmt.Value, value) {
 		return false
 	}
 

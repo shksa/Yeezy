@@ -120,7 +120,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	}
 	p.readNextToken()
 
-	if !(p.nextTokenIs(token.INT) || p.nextTokenIs(token.IDENTIFIER) || p.nextTokenIs(token.BANG) || p.nextTokenIs(token.MINUS)) {
+	if !(p.nextTokenIs(token.INT) || p.nextTokenIs(token.IDENTIFIER) || p.nextTokenIs(token.BANG) || p.nextTokenIs(token.MINUS) || p.nextTokenIs(token.TRUE) || p.nextTokenIs(token.FALSE)) {
 		p.unexpectedTokenError(token.Token{Type: "EXPRESSION"})
 		return nil
 	}
