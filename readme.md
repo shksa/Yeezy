@@ -5,12 +5,6 @@
 ## Lexer
 - Takes source code as input and generates tokens as output that represent the source code.
 
-## Why semi-colon?
-- semicolan represents a character which is neither a number nor a letter.
-- recognizing numbers or letter names involves reading successive chars continuously untill a char that is neither a digit or a letter is encountered respectively.
-- If such a char is encountered, the mactching loop breaks and the number or word is recognized.
-- So we NEED a char to represent neither a digit nor a letter so that the matching loop breaks.
-
 ## Parser
 - A parser takes source code as input (either as text or tokens) and produce a data structure which represents this source code.
 - In most interpreters and compilers the data structure used for the internal representation of the source code is called a "syntax tree" or an "abstract syntax tree" (AST for short). 

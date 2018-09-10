@@ -82,9 +82,9 @@ func (p *Parser) ParseProgram() *ast.Program {
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
-		// At this point, p.curToken is a token.SEMICOLON
+		// For single-line inputs, at this point, p.nextToken is always token.EOF <- IMP. INVARIANT
 		p.readNextToken()
-		// After p.readNextToken(), p.curToken is the first token of a new statement.
+		// For single-line inputs, at this point, p.curToken is always token.EOF <- IMP. INVARIANT
 	}
 
 	return program
@@ -170,11 +170,21 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
 
 	exprStmtNode.Expression = p.parseExpression(LOWEST)
 
-	if !p.nextTokenIs(token.SEMICOLON) {
-		p.unexpectedTokenError(token.SEMICOLON)
-		return nil
+	// semicolon is optional for single-line inputs.
+	// 1.	For a single-line input without a semicolon at the end,
+	//			p.curToken will be the last token.
+	// 			p.nextToken will be token.EOF.
+	// 2. For a single-line input with a semicolon at the end,
+	// 			p.curToken will be the last token.
+	// 			p.nextToken will be token.SEMICOLON.
+	//			calling p.readNextToken() will make p.curToken = token.SEMICOLON
+	//			and p.nextToken = token.EOF
+	// So for a single-line input, after this if-block,
+	// 			p.curToken = last token in the line. ex- ; or 55 or foobar
+	//			p.nextToken = always token.EOF. <- IMP. INVARIANT FOR SINGLE-LINE INPUTS
+	if p.nextTokenIs(token.SEMICOLON) {
+		p.readNextToken()
 	}
-	p.readNextToken() //p.curToken should token.SEMICOLON at the end of parsing a statement
 
 	return exprStmtNode
 }
@@ -280,7 +290,7 @@ func (p *Parser) nextTokenPrecedence() int {
 	if p, ok := precedences[p.nextToken]; ok {
 		return p
 	}
-	return LOWEST
+	return LOWEST // This is returned when the p.nextToken is a token.EOF or token.SEMICOLON.
 }
 
 func (p *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionNode {

@@ -336,9 +336,9 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"5 < 5;", 5, "<", 5},
 		{"5 == 5;", 5, "==", 5},
 		{"5 != 5;", 5, "!=", 5},
-		{"true == true;", true, "==", true},
-		{"true != false;", true, "!=", false},
-		{"false == false;", false, "==", false},
+		{"true == true", true, "==", true},
+		{"true != false", true, "!=", false},
+		{"false == false", false, "==", false},
 	}
 
 	for _, tt := range infixTests {
@@ -368,75 +368,75 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		expected string
 	}{
 		{
-			"a * b;",
+			"a * b",
 			"(a * b)",
 		},
 		{
-			"-a * b;",
+			"-a * b",
 			"((-a) * b)",
 		},
 		{
-			"!-a;",
+			"!-a",
 			"(!(-a))",
 		},
 		{
-			"a + b + c;",
+			"a + b + c",
 			"((a + b) + c)",
 		},
 		{
-			"a + b - c;",
+			"a + b - c",
 			"((a + b) - c)",
 		},
 		{
-			"a * b * c;",
+			"a * b * c",
 			"((a * b) * c)",
 		},
 		{
-			"a * b / c;",
+			"a * b / c",
 			"((a * b) / c)",
 		},
 		{
-			"a + b / c;",
+			"a + b / c",
 			"(a + (b / c))",
 		},
 		{
-			"a + b * c + d / e - f;",
+			"a + b * c + d / e - f",
 			"(((a + (b * c)) + (d / e)) - f)",
 		},
 		{
-			"3 + 4; -5 * 5;",
+			"3 + 4 ; -5 * 5",
 			"(3 + 4)((-5) * 5)",
 		},
 		{
-			"5 > 4 == 3 < 4;",
+			"5 > 4 == 3 < 4",
 			"((5 > 4) == (3 < 4))",
 		},
 		{
-			"5 < 4 != 3 > 4;",
+			"5 < 4 != 3 > 4",
 			"((5 < 4) != (3 > 4))",
 		},
 		{
-			"3 + 4 * 5 == 3 * 1 + 4 * 5;",
+			"3 + 4 * 5 == 3 * 1 + 4 * 5",
 			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
 		},
 		{
-			"3 + 4 * 5 == 3 * 1 + 4 * 5;",
+			"3 + 4 * 5 == 3 * 1 + 4 * 5",
 			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
 		},
 		{
-			"true;",
+			"true",
 			"true",
 		},
 		{
-			"false;",
+			"false",
 			"false",
 		},
 		{
-			"3 > 5 == false;",
+			"3 > 5 == false",
 			"((3 > 5) == false)",
 		},
 		{
-			"3 < 5 == true;",
+			"3 < 5 == true",
 			"((3 < 5) == true)",
 		},
 	}

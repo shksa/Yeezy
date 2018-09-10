@@ -37,6 +37,7 @@ func (l *Lexer) readNextChar() {
 	// 2. after executing the func, l.ch should be '0' and,
 	// 3. l.position should be len(input) and l.nextPosition should be len(input) + 1.
 	// By doing so we can specify l.position as the upperbound in the slice of the input to get the last character from the input.
+	// Without l.position being len(input) we CANNOT slice out the last string of chars. This is very imp.
 	// readNextChar will be called again one final time before returning form l.NextToken with the token.EOF, At this point
 	// of time, l.position is len(input), l.nextPosition is len(input) + 1, after the function execution, l.ch will again be set
 	// to '0' because the if condition -> l.nextPosition > len(l.input) will be true and l.position will be incremented to
@@ -115,7 +116,7 @@ func (l *Lexer) NextToken() token.Token {
 // readLetterString returns an string of letters from input source code
 func (l *Lexer) readLetterString() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) { // If the letter-string is at the end of a line, loop will be broken by by either '0' or ';'.
 		l.readNextChar()
 	}
 	return l.input[position:l.position]
@@ -123,7 +124,7 @@ func (l *Lexer) readLetterString() string {
 
 func (l *Lexer) readNumber() string {
 	position := l.position
-	for isDigit(l.ch) {
+	for isDigit(l.ch) { // If the number is at the end of a line, loop will be broken by by either '0' or ';'.
 		l.readNextChar()
 	}
 	return l.input[position:l.position]
