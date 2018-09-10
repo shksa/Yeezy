@@ -29,6 +29,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerParseFuncForPrefixToken(token.INT, p.parseIntegerLiteral)
 	p.registerParseFuncForPrefixToken(token.BANG, p.parsePrefixExpression)
 	p.registerParseFuncForPrefixToken(token.MINUS, p.parsePrefixExpression)
+	p.registerParseFuncForPrefixToken(token.TRUE, p.parseBooleanLiteral)
+	p.registerParseFuncForPrefixToken(token.FALSE, p.parseBooleanLiteral)
 	p.ParseFnForInfixToken = make(map[string]infixTokenParseFn)
 	p.registerParseFuncForInfixToken(token.PLUS, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.MINUS, p.parseInfixExpression)
@@ -152,7 +154,7 @@ func (p *Parser) unexpectedTokenError(expectedTok token.Token) {
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
-	stmt := &ast.ReturnStatementNode{Token: p.curToken}
+	retStmtNode := &ast.ReturnStatementNode{Token: p.curToken}
 
 	p.readNextToken()
 
@@ -160,13 +162,13 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
 	for p.curToken != token.SEMICOLON {
 		p.readNextToken()
 	}
-	return stmt
+	return retStmtNode
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
-	stmt := &ast.ExpressionStatementNode{Token: p.curToken}
+	exprStmtNode := &ast.ExpressionStatementNode{Token: p.curToken}
 
-	stmt.Expression = p.parseExpression(LOWEST)
+	exprStmtNode.Expression = p.parseExpression(LOWEST)
 
 	if !p.nextTokenIs(token.SEMICOLON) {
 		p.unexpectedTokenError(token.SEMICOLON)
@@ -174,7 +176,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
 	}
 	p.readNextToken() //p.curToken should token.SEMICOLON at the end of parsing a statement
 
-	return stmt
+	return exprStmtNode
 }
 
 // Operator precedences. With these constants we can answer questions like :-
@@ -234,15 +236,15 @@ func (p *Parser) parseIdentifier() ast.ExpressionNode {
 }
 
 func (p *Parser) parseIntegerLiteral() ast.ExpressionNode {
-	intLitNode := &ast.IntegerLiteralNode{Token: p.curToken}
+	intLiteralNode := &ast.IntegerLiteralNode{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
 		errMsg := fmt.Sprintf("cannot parse %q as an int64", p.curToken.Literal)
 		p.Errors = append(p.Errors, errMsg)
 		return nil
 	}
-	intLitNode.Value = value
-	return intLitNode
+	intLiteralNode.Value = value
+	return intLiteralNode
 }
 
 func (p *Parser) parsePrefixExpression() ast.ExpressionNode {
@@ -293,4 +295,8 @@ func (p *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionNod
 	infixExprNode.Right = p.parseExpression(infixOpPrecedence)
 
 	return infixExprNode
+}
+
+func (p *Parser) parseBooleanLiteral() ast.ExpressionNode {
+	return &ast.BooleanNode{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }

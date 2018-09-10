@@ -69,9 +69,7 @@ type LetStatementNode struct {
 func (ls *LetStatementNode) statementNode() {}
 
 // TokenLiteral returns the LetStatementNode's token literal.
-func (ls *LetStatementNode) TokenLiteral() string {
-	return ls.Token.Literal
-}
+func (ls *LetStatementNode) TokenLiteral() string { return ls.Token.Literal }
 
 func (ls *LetStatementNode) String() string {
 	var out bytes.Buffer
@@ -88,7 +86,7 @@ func (ls *LetStatementNode) String() string {
 	return outString
 }
 
-// IdentifierNode is a type for representing all identifiers in AST.
+// IdentifierNode is a type for representing all "identifier" expressions in AST.
 type IdentifierNode struct {
 	Token token.Token // token.IDENTIFIER
 	Value string      // Value is the Token.Literal
@@ -98,13 +96,9 @@ type IdentifierNode struct {
 func (i *IdentifierNode) expressionNode() {}
 
 // TokenLiteral returns the IdentifierNode's token literal.
-func (i *IdentifierNode) TokenLiteral() string {
-	return i.Token.Literal
-}
+func (i *IdentifierNode) TokenLiteral() string { return i.Token.Literal }
 
-func (i *IdentifierNode) String() string {
-	return i.Value
-}
+func (i *IdentifierNode) String() string { return i.Value }
 
 // ReturnStatementNode is a type for representing all "return" statements in AST. ex:- return 777
 type ReturnStatementNode struct {
@@ -116,9 +110,7 @@ type ReturnStatementNode struct {
 func (rs *ReturnStatementNode) statementNode() {}
 
 // TokenLiteral returns the ReturnStatementNode's token literal.
-func (rs *ReturnStatementNode) TokenLiteral() string {
-	return rs.Token.Literal
-}
+func (rs *ReturnStatementNode) TokenLiteral() string { return rs.Token.Literal }
 
 func (rs *ReturnStatementNode) String() string {
 	var out bytes.Buffer
@@ -142,9 +134,7 @@ type ExpressionStatementNode struct {
 func (es *ExpressionStatementNode) statementNode() {}
 
 // TokenLiteral returns the ExpressionStatementNode's token literal.
-func (es *ExpressionStatementNode) TokenLiteral() string {
-	return es.Token.Literal
-}
+func (es *ExpressionStatementNode) TokenLiteral() string { return es.Token.Literal }
 
 func (es *ExpressionStatementNode) String() string {
 	if es.Expression != nil {
@@ -153,7 +143,7 @@ func (es *ExpressionStatementNode) String() string {
 	return ""
 }
 
-// IntegerLiteralNode is a type for representing all integer literals in AST.
+// IntegerLiteralNode is a type for representing all "integer" literal expressions in AST.
 type IntegerLiteralNode struct {
 	Token token.Token // token.INT
 	Value int64
@@ -162,13 +152,9 @@ type IntegerLiteralNode struct {
 func (il *IntegerLiteralNode) expressionNode() {}
 
 // TokenLiteral returns the IntegerLiteralNode's token literal.
-func (il *IntegerLiteralNode) TokenLiteral() string {
-	return il.Token.Literal
-}
+func (il *IntegerLiteralNode) TokenLiteral() string { return il.Token.Literal }
 
-func (il *IntegerLiteralNode) String() string {
-	return il.Token.Literal
-}
+func (il *IntegerLiteralNode) String() string { return il.Token.Literal }
 
 // PrefixExpressionNode is a type for representing all "prefix" expressions in AST.
 type PrefixExpressionNode struct {
@@ -180,9 +166,7 @@ type PrefixExpressionNode struct {
 func (pe *PrefixExpressionNode) expressionNode() {}
 
 // TokenLiteral returns the PrefixExpressionNode's token literal.
-func (pe *PrefixExpressionNode) TokenLiteral() string {
-	return pe.Token.Literal
-}
+func (pe *PrefixExpressionNode) TokenLiteral() string { return pe.Token.Literal }
 
 func (pe *PrefixExpressionNode) String() string {
 	var out bytes.Buffer
@@ -207,9 +191,7 @@ type InfixExpressionNode struct {
 func (ie *InfixExpressionNode) expressionNode() {}
 
 // TokenLiteral returns the InfixExpressionNode's token literal.
-func (ie *InfixExpressionNode) TokenLiteral() string {
-	return ie.Token.Literal
-}
+func (ie *InfixExpressionNode) TokenLiteral() string { return ie.Token.Literal }
 
 func (ie *InfixExpressionNode) String() string {
 	var out bytes.Buffer
@@ -223,3 +205,15 @@ func (ie *InfixExpressionNode) String() string {
 	outString := out.String()
 	return outString
 }
+
+// BooleanNode is a type for representing all "boolean" literal expressions in AST.
+type BooleanNode struct {
+	Token token.Token
+	Value bool // The go bool values, true or false
+}
+
+func (b *BooleanNode) expressionNode() {}
+
+// TokenLiteral returns the BooleanNode's token literal.
+func (b *BooleanNode) TokenLiteral() string { return b.Token.Literal }
+func (b *BooleanNode) String() string       { return b.Token.Literal }
