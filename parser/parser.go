@@ -31,6 +31,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerParseFuncForPrefixToken(token.MINUS, p.parsePrefixExpression)
 	p.registerParseFuncForPrefixToken(token.TRUE, p.parseBooleanLiteral)
 	p.registerParseFuncForPrefixToken(token.FALSE, p.parseBooleanLiteral)
+	p.registerParseFuncForPrefixToken(token.LPAREN, p.parseGroupedExpression)
 	p.ParseFnForInfixToken = make(map[string]infixTokenParseFn)
 	p.registerParseFuncForInfixToken(token.PLUS, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.MINUS, p.parseInfixExpression)
@@ -63,7 +64,7 @@ func (p *Parser) registerParseFuncForInfixToken(tok token.Token, fn infixTokenPa
 }
 
 func (p *Parser) noPrefixParseFnError(tok token.Token) {
-	msg := fmt.Sprintf("No parse function found for %q token at prefix position", tok.Literal)
+	msg := fmt.Sprintf("No prefix parse function found for %s token", tok.Literal)
 	p.Errors = append(p.Errors, msg)
 }
 
@@ -95,6 +96,10 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
+/*
+IMPORTANT: All parsing is done from LEFT to RIGHT.
+*/
+
 // parseStatement parses statements based on the current token info.
 // Because the type of a statement is determined by it's FIRST token.
 func (p *Parser) parseStatement() ast.StatementNode {
@@ -108,36 +113,37 @@ func (p *Parser) parseStatement() ast.StatementNode {
 	}
 }
 
+func (p *Parser) expectAndReadNextTokenToBe(tok token.Token) bool {
+	if !p.nextTokenIs(tok) {
+		p.unexpectedTokenError(tok)
+		return false
+	}
+	p.readNextToken()
+	return true
+}
+
 // parseLetStatement returns a pointer to a let statement node i.e *ast.LetStatementNode
 func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	letStmtNode := &ast.LetStatementNode{Token: p.curToken}
-	if !p.nextTokenIs(token.IDENTIFIER) {
-		p.unexpectedTokenError(token.IDENTIFIER)
+
+	if didRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !didRead {
 		return nil
 	}
-	p.readNextToken()
 
 	letStmtNode.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
 
-	if !p.nextTokenIs(token.ASSIGN) {
-		p.unexpectedTokenError(token.ASSIGN)
+	if didRead := p.expectAndReadNextTokenToBe(token.ASSIGN); !didRead {
 		return nil
 	}
-	p.readNextToken()
 
-	if !(p.nextTokenIs(token.INT) || p.nextTokenIs(token.IDENTIFIER) || p.nextTokenIs(token.BANG) || p.nextTokenIs(token.MINUS) || p.nextTokenIs(token.TRUE) || p.nextTokenIs(token.FALSE)) {
-		p.unexpectedTokenError(token.Token{Type: "EXPRESSION"})
-		return nil
-	}
+	// next token is the expression ot start of an expression
 	p.readNextToken()
 
 	letStmtNode.Value = p.parseExpression(LOWEST)
 
-	if !p.nextTokenIs(token.SEMICOLON) {
-		p.unexpectedTokenError(token.SEMICOLON)
+	if didRead := p.expectAndReadNextTokenToBe(token.SEMICOLON); !didRead {
 		return nil
 	}
-	p.readNextToken() //p.curToken should token.SEMICOLON at the end of parsing a statement
 
 	return letStmtNode
 }
@@ -229,7 +235,7 @@ func (p *Parser) parseExpression(precedence int) ast.ExpressionNode {
 	// 1. If the left-binding power of the * token is greater than the right binding power of +,
 	//		then the node for 2 becomes the left arm of the infix expression with * as the infix operator.
 	// That means the parsed expression would be nested this way -> 1 + (2 * 3)
-	for !p.nextTokenIs(token.SEMICOLON) && precedence < p.nextTokenPrecedence() { // The next token can be a semicolon or a eof
+	for !p.nextTokenIs(token.SEMICOLON) && precedence < p.nextTokenPrecedence() { // The next token can be a semicolon or a eof or a RPAREN
 		infixParseFn := p.ParseFnForInfixToken[p.nextToken.Type]
 		if infixParseFn == nil {
 			return leftExprNode
@@ -311,4 +317,19 @@ func (p *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionNod
 
 func (p *Parser) parseBooleanLiteral() ast.ExpressionNode {
 	return &ast.BooleanNode{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
+}
+
+func (p *Parser) parseGroupedExpression() ast.ExpressionNode {
+	p.readNextToken()
+
+	exp := p.parseExpression(LOWEST) // Why LOWEST? Because we want the expression in the paren not be swayed by the precedence power
+	// of the operator that is to the left of the paren. Therefore LOWEST signifies to the parseExpression function that the operator
+	// in the left of the expression is of the lowest precedence, so that the expression will not be under the right-binding power of
+	// that operator.
+
+	if didRead := p.expectAndReadNextTokenToBe(token.RPAREN); !didRead {
+		return nil
+	}
+
+	return exp
 }
