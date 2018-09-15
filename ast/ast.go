@@ -217,3 +217,49 @@ func (b *BooleanNode) expressionNode() {}
 // TokenLiteral returns the BooleanNode's token literal.
 func (b *BooleanNode) TokenLiteral() string { return b.Token.Literal }
 func (b *BooleanNode) String() string       { return b.Token.Literal }
+
+// IfExpressionNode is a type for representing all "if" expressions in AST.
+type IfExpressionNode struct {
+	Token       token.Token // The if token
+	Condition   ExpressionNode
+	Consequence *BlockStatementNode
+	Alternative *BlockStatementNode
+}
+
+// TokenLiteral returns the IfExpressionNode's token literal.
+func (ie *IfExpressionNode) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IfExpressionNode) expressionNode()      {}
+func (ie *IfExpressionNode) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ie.Consequence.String())
+
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.String())
+	}
+
+	return out.String()
+}
+
+// BlockStatementNode is a type for representing all "block" statements in AST.
+type BlockStatementNode struct {
+	Token      token.Token // The { token
+	Statements []StatementNode
+}
+
+// TokenLiteral returns the BlockStatementNode's token literal.
+func (bs *BlockStatementNode) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatementNode) statementNode()       {}
+func (bs *BlockStatementNode) String() string {
+	var out bytes.Buffer
+
+	for _, stmt := range bs.Statements {
+		out.WriteString(stmt.String())
+	}
+
+	return out.String()
+}

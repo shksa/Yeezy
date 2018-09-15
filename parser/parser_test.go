@@ -473,3 +473,100 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		}
 	}
 }
+
+func TestIfExpressions(t *testing.T) {
+	input := `if (x < y) {x}`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain 1 statement. got=%d", len(program.Statements))
+	}
+
+	exprStmt, ok := program.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Fatalf("program.Statements[0] not a *ast.ExpressionStatementNode. got=%T", program.Statements[0])
+	}
+
+	ifExpr, ok := exprStmt.Expression.(*ast.IfExpressionNode)
+	if !ok {
+		t.Fatalf("exprStmt.Expression not a *ast.IfExpressionNode. got=%T", exprStmt.Expression)
+	}
+
+	if !testInfixExpression(t, ifExpr.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(ifExpr.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statement. got=%d", len(ifExpr.Consequence.Statements))
+	}
+
+	consequenceExprStmt, ok := ifExpr.Consequence.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Errorf("Consequence.Statements[0] is not an *ast.ExpressionStatementNode. got=%T", ifExpr.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequenceExprStmt.Expression, "x") {
+		return
+	}
+
+	if ifExpr.Alternative != nil {
+		t.Errorf("ifExpr.Alternative is not nil. got=%+v", ifExpr.Alternative)
+	}
+}
+
+func TestIfElseExpressions(t *testing.T) {
+	input := `if (x < y) { x } else { y }`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain 1 statement. got=%d", len(program.Statements))
+	}
+
+	exprStmt, ok := program.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Fatalf("program.Statements[0] not a *ast.ExpressionStatementNode. got=%T", program.Statements[0])
+	}
+
+	ifExpr, ok := exprStmt.Expression.(*ast.IfExpressionNode)
+	if !ok {
+		t.Fatalf("exprStmt.Expression not a *ast.IfExpressionNode. got=%T", exprStmt.Expression)
+	}
+
+	if !testInfixExpression(t, ifExpr.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(ifExpr.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statement. got=%d", len(ifExpr.Consequence.Statements))
+	}
+
+	consequenceExprStmt, ok := ifExpr.Consequence.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Errorf("Consequence.Statements[0] is not an *ast.ExpressionStatementNode. got=%T", ifExpr.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequenceExprStmt.Expression, "x") {
+		return
+	}
+
+	if len(ifExpr.Alternative.Statements) != 1 {
+		t.Errorf("alternative is not 1 statement. got=%d", len(ifExpr.Alternative.Statements))
+	}
+
+	alternativeExprStmt, ok := ifExpr.Alternative.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Errorf("Alternative.Statements[0] is not an *ast.ExpressionStatementNode. got=%T", ifExpr.Alternative.Statements[0])
+	}
+
+	if !testIdentifier(t, alternativeExprStmt.Expression, "y") {
+		return
+	}
+}

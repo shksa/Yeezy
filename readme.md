@@ -75,3 +75,8 @@
         - **Any expression can follow a prefix operator as an operand.**
     - **Infix-Expressions**
         - They have the form `<expression> <infix-operator> <expression>`
+    - **Boolean literals**
+    - **Grouped expressions**
+    - **If expressions**
+        - In Monkey, if-else conditionals are expressions.
+        - They have the form `if (<condition>) <consequence> else <alternative>`

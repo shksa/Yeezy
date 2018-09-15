@@ -32,6 +32,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerParseFuncForPrefixToken(token.TRUE, p.parseBooleanLiteral)
 	p.registerParseFuncForPrefixToken(token.FALSE, p.parseBooleanLiteral)
 	p.registerParseFuncForPrefixToken(token.LPAREN, p.parseGroupedExpression)
+	p.registerParseFuncForPrefixToken(token.IF, p.parseIfExpression)
 	p.ParseFnForInfixToken = make(map[string]infixTokenParseFn)
 	p.registerParseFuncForInfixToken(token.PLUS, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.MINUS, p.parseInfixExpression)
@@ -97,7 +98,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 /*
-IMPORTANT: All parsing is done from LEFT to RIGHT.
+IMPORTANT:
+- All parsing is done from LEFT to RIGHT.
+- The parser's curToken is at the "end token" of the statement after parsing the statement.
+- The parse functions for various statements/expressions are called only when the curToken is the first token of those
+	statements/expressions and end at the last token of the statements/expression i.e curToken will be the last token of those
+	statements/expressions.
 */
 
 // parseStatement parses statements based on the current token info.
@@ -126,22 +132,22 @@ func (p *Parser) expectAndReadNextTokenToBe(tok token.Token) bool {
 func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 	letStmtNode := &ast.LetStatementNode{Token: p.curToken}
 
-	if didRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !didRead {
+	if isRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !isRead {
 		return nil
 	}
 
 	letStmtNode.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
 
-	if didRead := p.expectAndReadNextTokenToBe(token.ASSIGN); !didRead {
+	if isRead := p.expectAndReadNextTokenToBe(token.ASSIGN); !isRead {
 		return nil
 	}
 
-	// next token is the expression ot start of an expression
+	// At this point, next token is the start of an expression
 	p.readNextToken()
 
 	letStmtNode.Value = p.parseExpression(LOWEST)
 
-	if didRead := p.expectAndReadNextTokenToBe(token.SEMICOLON); !didRead {
+	if isRead := p.expectAndReadNextTokenToBe(token.SEMICOLON); !isRead {
 		return nil
 	}
 
@@ -180,10 +186,10 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
 
 	// semicolon is optional for single-line inputs.
 	// 1.	For a single-line input without a semicolon at the end,
-	//			p.curToken will be the last token.
+	//			p.curToken will be the last token of the expression. ex: } for if-expr.
 	// 			p.nextToken will be token.EOF.
 	// 2. For a single-line input with a semicolon at the end,
-	// 			p.curToken will be the last token.
+	// 			p.curToken will be the last token of the expression. ex: } for if-expr.
 	// 			p.nextToken will be token.SEMICOLON.
 	//			calling p.readNextToken() will make p.curToken = token.SEMICOLON
 	//			and p.nextToken = token.EOF
@@ -327,9 +333,59 @@ func (p *Parser) parseGroupedExpression() ast.ExpressionNode {
 	// in the left of the expression is of the lowest precedence, so that the expression will not be under the right-binding power of
 	// that operator.
 
-	if didRead := p.expectAndReadNextTokenToBe(token.RPAREN); !didRead {
+	if isRead := p.expectAndReadNextTokenToBe(token.RPAREN); !isRead {
 		return nil
 	}
 
 	return exp
+}
+
+func (p *Parser) parseIfExpression() ast.ExpressionNode {
+	ifExpr := &ast.IfExpressionNode{Token: p.curToken}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.LPAREN); !isRead {
+		return nil
+	}
+
+	p.readNextToken()
+
+	ifExpr.Condition = p.parseExpression(LOWEST)
+
+	if isRead := p.expectAndReadNextTokenToBe(token.RPAREN); !isRead {
+		return nil
+	}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.LBRACE); !isRead { // Starting token of block statement "{"
+		return nil
+	}
+
+	ifExpr.Consequence = p.parseBlockStatement()
+
+	if p.nextTokenIs(token.ELSE) {
+		p.readNextToken()
+
+		if isRead := p.expectAndReadNextTokenToBe(token.LBRACE); !isRead { // Starting token of block statement "{"
+			return nil
+		}
+
+		ifExpr.Alternative = p.parseBlockStatement()
+	}
+
+	return ifExpr // p.curToken is at "}" now
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatementNode {
+	blockStmt := &ast.BlockStatementNode{Token: p.curToken}
+
+	p.readNextToken()
+
+	for !p.curTokenIs(token.RBRACE) {
+		stmtNode := p.parseStatement()
+		if stmtNode != nil {
+			blockStmt.Statements = append(blockStmt.Statements, stmtNode)
+		}
+		p.readNextToken()
+	}
+
+	return blockStmt
 }
