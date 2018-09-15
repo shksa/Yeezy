@@ -570,3 +570,76 @@ func TestIfElseExpressions(t *testing.T) {
 		return
 	}
 }
+
+func TestFunctionLiteralExpression(t *testing.T) {
+	input := `func(x, y) {
+		x + y
+	}`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain 1 statement. got=%d", len(program.Statements))
+	}
+
+	exprStmt, ok := program.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Fatalf("program.Statements[0] not a *ast.ExpressionStatementNode. got=%T", program.Statements[0])
+	}
+
+	funcExpr, ok := exprStmt.Expression.(*ast.FunctionLiteralNode)
+	if !ok {
+		t.Fatalf("exprStmt.Expression is not an *ast.FunctionLiteralNode. got=%T", exprStmt.Expression)
+	}
+
+	if len(funcExpr.Parameters) != 2 {
+		t.Fatalf("len(funcExpr.Parameters) is not 2. got=%d", len(funcExpr.Parameters))
+	}
+
+	testIdentifier(t, funcExpr.Parameters[0], "x")
+	testIdentifier(t, funcExpr.Parameters[1], "y")
+
+	if len(funcExpr.Body.Statements) != 1 {
+		t.Fatalf("funcExpr.Body.Statements has not 1 statements. got=%d\n", len(funcExpr.Body.Statements))
+	}
+
+	bodyStmt, ok := funcExpr.Body.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Fatalf("funcExpr body stmt is not ast.ExpressionStatement. got=%T", funcExpr.Body.Statements[0])
+	}
+
+	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+
+}
+
+func TestFunctionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []string
+	}{
+		{input: "func() {};", expectedParams: []string{}},
+		{input: "func(x) {};", expectedParams: []string{"x"}},
+		{input: "func(x, y, z) {};", expectedParams: []string{"x", "y", "z"}},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		exprStmt := program.Statements[0].(*ast.ExpressionStatementNode)
+		funcExpr := exprStmt.Expression.(*ast.FunctionLiteralNode)
+
+		if len(funcExpr.Parameters) != len(tt.expectedParams) {
+			t.Errorf("length parameters wrong. want %d, got=%d\n", len(tt.expectedParams), len(funcExpr.Parameters))
+		}
+
+		for i, ident := range tt.expectedParams {
+			testIdentifier(t, funcExpr.Parameters[i], ident)
+		}
+	}
+}

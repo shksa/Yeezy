@@ -33,6 +33,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerParseFuncForPrefixToken(token.FALSE, p.parseBooleanLiteral)
 	p.registerParseFuncForPrefixToken(token.LPAREN, p.parseGroupedExpression)
 	p.registerParseFuncForPrefixToken(token.IF, p.parseIfExpression)
+	p.registerParseFuncForPrefixToken(token.FUNCTION, p.parseFunctionLiteralExpression)
 	p.ParseFnForInfixToken = make(map[string]infixTokenParseFn)
 	p.registerParseFuncForInfixToken(token.PLUS, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.MINUS, p.parseInfixExpression)
@@ -188,17 +189,21 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
 	// 1.	For a single-line input without a semicolon at the end,
 	//			p.curToken will be the last token of the expression. ex: } for if-expr.
 	// 			p.nextToken will be token.EOF.
+	//			calling p.readNextToken() will make
+	//			p.curToken = token.EOF.
+	//			and p.nextToken = token.EOF
 	// 2. For a single-line input with a semicolon at the end,
 	// 			p.curToken will be the last token of the expression. ex: } for if-expr.
 	// 			p.nextToken will be token.SEMICOLON.
-	//			calling p.readNextToken() will make p.curToken = token.SEMICOLON
+	//			calling p.readNextToken() will make
+	//			p.curToken = token.SEMICOLON
 	//			and p.nextToken = token.EOF
-	// So for a single-line input, after this if-block,
-	// 			p.curToken = last token in the line. ex- ; or 55 or foobar
-	//			p.nextToken = always token.EOF. <- IMP. INVARIANT FOR SINGLE-LINE INPUTS
 	if p.nextTokenIs(token.SEMICOLON) {
 		p.readNextToken()
 	}
+	// So for a single-line input, after this if-block,
+	// 			p.curToken = token.SEMICOLON or token.EOF <- IMP. INVARIANT FOR SINGLE-LINE INPUTS
+	//			p.nextToken = always token.EOF <- IMP. INVARIANT FOR SINGLE-LINE INPUTS
 
 	return exprStmtNode
 }
@@ -387,5 +392,56 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatementNode {
 		p.readNextToken()
 	}
 
-	return blockStmt
+	return blockStmt // p.curToken is at "}" now
+}
+
+func (p *Parser) parseFunctionLiteralExpression() ast.ExpressionNode {
+	funcExpr := &ast.FunctionLiteralNode{Token: p.curToken}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.LPAREN); !isRead {
+		return nil
+	}
+
+	funcExpr.Parameters = p.parseFunctionParameters()
+
+	if isRead := p.expectAndReadNextTokenToBe(token.LBRACE); !isRead {
+		return nil
+	}
+
+	funcExpr.Body = p.parseBlockStatement()
+
+	return funcExpr
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
+	identifiers := []*ast.IdentifierNode{}
+
+	if p.nextTokenIs(token.RPAREN) {
+		p.readNextToken()
+		return identifiers
+	}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !isRead {
+		return nil
+	}
+
+	ident := &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal} // 1 param case
+
+	identifiers = append(identifiers, ident)
+
+	for p.nextTokenIs(token.COMMA) { // multiple param case
+		p.readNextToken()
+		if isRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !isRead {
+			return nil
+		}
+		ident := &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
+
+		identifiers = append(identifiers, ident)
+	}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.RPAREN); !isRead {
+		return nil
+	}
+
+	return identifiers
 }

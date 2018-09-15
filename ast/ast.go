@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/shksa/monkey/token"
 )
@@ -260,6 +261,33 @@ func (bs *BlockStatementNode) String() string {
 	for _, stmt := range bs.Statements {
 		out.WriteString(stmt.String())
 	}
+
+	return out.String()
+}
+
+// FunctionLiteralNode is a type for representing all "function literal" expressions in AST.
+type FunctionLiteralNode struct {
+	Token      token.Token // the "func" token
+	Parameters []*IdentifierNode
+	Body       *BlockStatementNode
+}
+
+// TokenLiteral returns the FunctionLiteralNode's token literal.
+func (fl *FunctionLiteralNode) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteralNode) expressionNode()      {}
+func (fl *FunctionLiteralNode) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(fl.Body.String())
 
 	return out.String()
 }
