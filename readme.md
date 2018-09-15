@@ -80,7 +80,9 @@
     - **If expressions**
         - In Monkey, if-else conditionals are expressions.
         - They have the form `if (<condition>) <consequence> else <alternative>`
-    - **function literals**
+    - **Function literals**
         - The only way to define functions.
         - form - `func <parameters> <block statement>`
         - `<parameters> := (<parameter1>, <parameter2>, <parameter3>, ...)`
+    - **Call expressions**.
+        - form - `Identifier or Function literal(<comma seperated expressions>)`

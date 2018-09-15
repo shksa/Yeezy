@@ -291,3 +291,29 @@ func (fl *FunctionLiteralNode) String() string {
 
 	return out.String()
 }
+
+// CallExpressionNode is a type for representing all "call" expressions in AST.
+type CallExpressionNode struct {
+	Token     token.Token    // The left paren "(" token
+	Function  ExpressionNode // either IdentifierNode or FunctionLiteralNode
+	Arguments []ExpressionNode
+}
+
+// TokenLiteral returns the CallExpressionNode's token literal.
+func (ce *CallExpressionNode) TokenLiteral() string { return ce.Token.Literal }
+func (ce *CallExpressionNode) expressionNode()      {}
+func (ce *CallExpressionNode) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, p := range ce.Arguments {
+		args = append(args, p.String())
+	}
+
+	out.WriteString(ce.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+
+	return out.String()
+}

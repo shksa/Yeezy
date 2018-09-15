@@ -42,7 +42,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerParseFuncForInfixToken(token.GT, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.EQ, p.parseInfixExpression)
 	p.registerParseFuncForInfixToken(token.NOTEQ, p.parseInfixExpression)
-	p.registerParseFuncForInfixToken(token.LPAREN, p.parseInfixExpression)
+	p.registerParseFuncForInfixToken(token.LPAREN, p.parseCallExpression)
 	p.registerParseFuncForInfixToken(token.SLASH, p.parseInfixExpression)
 	return p
 }
@@ -222,6 +222,18 @@ const (
 	CALL            // myFunction(X), #7
 )
 
+var precedences = map[token.Token]int{
+	token.EQ:       EQUALS,      // 2
+	token.NOTEQ:    EQUALS,      // 2
+	token.LT:       LESSGREATER, // 3
+	token.GT:       LESSGREATER, // 3
+	token.PLUS:     SUM,         // 4
+	token.MINUS:    SUM,         // 4
+	token.SLASH:    PRODUCT,     // 5
+	token.ASTERISK: PRODUCT,     // 5
+	token.LPAREN:   CALL,        // 7
+}
+
 // parseExpression does the following:-
 // 1. Checks whether the current token in prefix position has a parsing function associated with it.
 // 2. If it does, it calls the parsing function and that returns an expression node.
@@ -284,18 +296,6 @@ func (p *Parser) parsePrefixExpression() ast.ExpressionNode {
 	p.readNextToken()
 	prefixExprNode.Right = p.parseExpression(PREFIX)
 	return prefixExprNode
-}
-
-var precedences = map[token.Token]int{
-	token.EQ:       EQUALS,      // 2
-	token.NOTEQ:    EQUALS,      // 2
-	token.LT:       LESSGREATER, // 3
-	token.GT:       LESSGREATER, // 3
-	token.PLUS:     SUM,         // 4
-	token.MINUS:    SUM,         // 4
-	token.SLASH:    PRODUCT,     // 5
-	token.ASTERISK: PRODUCT,     // 5
-	token.LPAREN:   CALL,        // 7
 }
 
 func (p *Parser) curTokenPrecedence() int {
@@ -414,6 +414,7 @@ func (p *Parser) parseFunctionLiteralExpression() ast.ExpressionNode {
 }
 
 func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
+	// p.curToken is "("
 	identifiers := []*ast.IdentifierNode{}
 
 	if p.nextTokenIs(token.RPAREN) {
@@ -444,4 +445,47 @@ func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
 	}
 
 	return identifiers
+}
+
+func (p *Parser) parseCallExpression(function ast.ExpressionNode) ast.ExpressionNode {
+	callExp := &ast.CallExpressionNode{Token: p.curToken, Function: function}
+
+	callExp.Arguments = p.parseCallArguments()
+
+	return callExp
+}
+
+func (p *Parser) parseCallArguments() []ast.ExpressionNode {
+	// p.curToken is "("
+	args := []ast.ExpressionNode{}
+
+	if p.nextTokenIs(token.RPAREN) {
+		p.readNextToken()
+		return args
+	}
+
+	p.readNextToken()
+
+	argExp := p.parseExpression(LOWEST)
+
+	if argExp != nil {
+		args = append(args, argExp)
+	}
+
+	for p.nextTokenIs(token.COMMA) {
+		p.readNextToken()
+		// p.curToken is token.COMMA
+		p.readNextToken()
+		// p.curToken is an expression token
+		argExp := p.parseExpression(LOWEST)
+		if argExp != nil {
+			args = append(args, argExp)
+		}
+	}
+
+	if isRead := p.expectAndReadNextTokenToBe(token.RPAREN); !isRead {
+		return nil
+	}
+
+	return args // p.curToken is token.RPAREN ")"
 }
