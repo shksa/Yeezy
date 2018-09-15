@@ -164,7 +164,7 @@ func (p *Parser) nextTokenIs(tok token.Token) bool {
 }
 
 func (p *Parser) unexpectedTokenError(expectedTok token.Token) {
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead", expectedTok.Type, p.nextToken.Type)
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", expectedTok.Literal, p.nextToken.Literal)
 	p.Errors = append(p.Errors, msg)
 }
 

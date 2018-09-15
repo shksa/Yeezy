@@ -78,9 +78,7 @@ func (ls *LetStatementNode) String() string {
 	out.WriteString(ls.TokenLiteral() + " ")
 	out.WriteString(ls.Name.String())
 	out.WriteString(" = ")
-	if ls.Value != nil {
-		out.WriteString(ls.Value.String())
-	}
+	out.WriteString(ls.Value.String())
 
 	out.WriteString(";")
 	outString := out.String()
@@ -117,9 +115,7 @@ func (rs *ReturnStatementNode) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(rs.TokenLiteral() + " ")
-	if rs.ReturnValue != nil {
-		out.WriteString(rs.ReturnValue.String())
-	}
+	out.WriteString(rs.ReturnValue.String())
 	out.WriteString(";")
 	outString := out.String()
 	return outString
@@ -138,10 +134,10 @@ func (es *ExpressionStatementNode) statementNode() {}
 func (es *ExpressionStatementNode) TokenLiteral() string { return es.Token.Literal }
 
 func (es *ExpressionStatementNode) String() string {
-	if es.Expression != nil {
-		return es.Expression.String()
-	}
-	return ""
+	var out bytes.Buffer
+	out.WriteString(es.Expression.String())
+	out.WriteString(";")
+	return out.String()
 }
 
 // IntegerLiteralNode is a type for representing all "integer" literal expressions in AST.
