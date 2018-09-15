@@ -101,7 +101,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 /*
 IMPORTANT:
 - All parsing is done from LEFT to RIGHT.
-- The parser's curToken is at the "end token" of the statement after parsing the statement.
+- The parser's curToken is at the "end token" of the statement/expression after parsing the statement/expression.
 - The parse functions for various statements/expressions are called only when the curToken is the first token of those
 	statements/expressions and end at the last token of the statements/expression i.e curToken will be the last token of those
 	statements/expressions.
@@ -131,28 +131,28 @@ func (p *Parser) expectAndReadNextTokenToBe(tok token.Token) bool {
 
 // parseLetStatement returns a pointer to a let statement node i.e *ast.LetStatementNode
 func (p *Parser) parseLetStatement() *ast.LetStatementNode {
-	letStmtNode := &ast.LetStatementNode{Token: p.curToken}
+	letStmt := &ast.LetStatementNode{Token: p.curToken}
 
 	if isRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !isRead {
 		return nil
 	}
 
-	letStmtNode.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
+	letStmt.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
 
 	if isRead := p.expectAndReadNextTokenToBe(token.ASSIGN); !isRead {
 		return nil
 	}
 
-	// At this point, next token is the start of an expression
+	// At this point, p.nextToken is the start of an expression
 	p.readNextToken()
+	// At this point, p.curToken is the start of an expression
+	letStmt.Value = p.parseExpression(LOWEST)
 
-	letStmtNode.Value = p.parseExpression(LOWEST)
-
-	if isRead := p.expectAndReadNextTokenToBe(token.SEMICOLON); !isRead {
-		return nil
+	if p.nextTokenIs(token.SEMICOLON) {
+		p.readNextToken()
 	}
 
-	return letStmtNode
+	return letStmt
 }
 
 func (p *Parser) curTokenIs(tok token.Token) bool {
@@ -169,15 +169,17 @@ func (p *Parser) unexpectedTokenError(expectedTok token.Token) {
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
-	retStmtNode := &ast.ReturnStatementNode{Token: p.curToken}
+	retStmt := &ast.ReturnStatementNode{Token: p.curToken}
 
 	p.readNextToken()
 
-	// TODO: SKIPPING THE EXPRESSIONS UNTILL A SEMICOLON IS ENCOUNTERED
-	for p.curToken != token.SEMICOLON {
+	retStmt.ReturnValue = p.parseExpression(LOWEST)
+
+	if p.nextTokenIs(token.SEMICOLON) {
 		p.readNextToken()
 	}
-	return retStmtNode
+
+	return retStmt
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatementNode {
@@ -473,6 +475,7 @@ func (p *Parser) parseCallArguments() []ast.ExpressionNode {
 	}
 
 	for p.nextTokenIs(token.COMMA) {
+		// p.nextToken is token.COMMA
 		p.readNextToken()
 		// p.curToken is token.COMMA
 		p.readNextToken()
