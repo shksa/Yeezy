@@ -19,6 +19,15 @@ var (
 	object.Boolean value or a object.NULL value
 */
 
+/* Evaluation of statements inside Blocks
+- Inside blocks with return statements, the evaluation of a return statement will return a object.ReturnValue.
+- The evaluation of block statements is such that when a return statement is evaluated, the result which is an object.ReturnValue,
+	is returned and therefore the evaluation of rest of the statements in the block are skipped.
+- So the evaluation of such block statements will return a object.ReturnValue and will reach the top-level/program evaluation because
+	the if-expressions which consist of block statements, will return whatever the block statement returns.
+- In the top-level, the object.ReturnValue it will be unwrapped to get the actual value and will be returned to the user.
+*/
+
 // Eval takes in the AST and evaluates it, returning Monkey objects
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
@@ -31,7 +40,7 @@ func Eval(node ast.Node) object.Object {
 		return Eval(node.Expression)
 
 	case *ast.BlockStatementNode:
-		return evaluateBlockStatement(node)
+		return evaluateBlockStatement(node) // Can return a *object.ReturnValue
 
 	case *ast.ReturnStatementNode:
 		val := Eval(node.ReturnValue)
@@ -54,7 +63,7 @@ func Eval(node ast.Node) object.Object {
 		return evaluateInfixExpression(node.Operator, leftOperand, rightOperand)
 
 	case *ast.IfExpressionNode:
-		return evaluateIfExpression(node)
+		return evaluateIfExpression(node) // If-expression will return whatever its block statement will return.
 	}
 
 	return nil
@@ -67,7 +76,8 @@ func evaluateProgram(stmtNodes []ast.StatementNode) object.Object {
 		result = Eval(stmtNode)
 
 		if returnValue, ok := result.(*object.ReturnValue); ok {
-			return returnValue.Value // Evaluation of further statements is ended because a return statement is encountered.
+			return returnValue.Value // The actual Object value is unwrapped from the returnValue.
+			// Evaluation of further statements is ended because a return statement is encountered.
 		}
 	}
 
@@ -189,7 +199,7 @@ func isTruthy(obj object.Object) bool {
 	}
 }
 
-func evaluateBlockStatement(block *ast.BlockStatementNode) object.Object {
+func evaluateBlockStatement(block *ast.BlockStatementNode) object.Object { // can return object.ReturnValue if the block has return statements.
 	var result object.Object
 
 	for _, statement := range block.Statements {

@@ -136,7 +136,27 @@
             the other produces boolean values
     - **If-Else expression**
         - In the condition of the if expression, anything other than NULL and false are evaluated to TRUE.
+        - **The expression returns whatever it's block returns.**
+        - **Blocks can return the special ``object.ReturnValue`` value.**
 - **Return statements**
     - Can be used as a top-level statement in the program.
     - Statements after the it wont be evaluated.
     - We need to keep track of the return value so that we can later decide whether to stop evaluation or not.
+- **Program evaluation**
+    - The statements are evaluated one-by-one.
+    - The only interesting thing in this routine is that, the result of each statement after it's evaluation, is type asserted
+        with `object.ReturnValue` and if the assertion succeds, the evaluation of the remaining statements is skipped by returning
+        the actual value that is wrapped by the `object.ReturnValue` from the evaluation function.
+    - So when we have top-level statements such as
+        ``` 2 + 4
+            if (1 < 2) {
+                return true
+            } else {
+                return false
+            }
+            5 * 8 + 9
+        ```
+    - The if-expression statememt is evaluated to a result that is of type `object.ReturnValue`.
+    - The evaluator for the program checks if the result values is of type `object.ReturnValue` and if it is, it unwraps the
+        actual value and return it, skipping the remaining statements in the program.
+    - Similar thing happens for a return statement

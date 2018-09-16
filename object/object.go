@@ -29,7 +29,7 @@ const (
 	RETURNVAL = "RETURN_VALUE"
 )
 
-/* IMPORTANT
+/* Types in Monkey
 - Every value has a different representation in the Host lang, so each type of value is represented by a struct.
 - Whenever interger literals are encountered in the source, they are turned into an ast.IntegerLiteral and then
 	when evaluating the AST node, we turn it into an object.Integer, saving the value inside the struct.
