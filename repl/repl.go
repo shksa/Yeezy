@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/user"
 
+	"github.com/shksa/monkey/evaluator"
 	"github.com/shksa/monkey/parser"
 
 	"github.com/shksa/monkey/lexer"
@@ -30,8 +32,8 @@ const MONKEYFACE = `
            '-----'
 `
 
-func start() {
-	scanner := bufio.NewScanner(os.Stdin)
+func start(in io.Reader, out io.Writer) {
+	scanner := bufio.NewScanner(in)
 	for {
 		fmt.Printf(PROMPT)
 		didScan := scanner.Scan()
@@ -54,7 +56,11 @@ func start() {
 			continue
 		}
 
-		fmt.Println(program.String())
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
@@ -65,7 +71,7 @@ func main() {
 	}
 	fmt.Printf("Hello %s! This is the monkey programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
-	start()
+	start(os.Stdin, os.Stdout)
 }
 
 func printParseErrors(errors []string) {

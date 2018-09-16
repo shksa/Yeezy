@@ -108,3 +108,22 @@
 
 ## Tree-walking interpreter
 - It take the AST our parser builds for us and interprets it "on the fly", without any preprocessing or compilation step.
+
+## Representing Monkey values in Host language
+- We need a way to represent values of Monkey in the Host language.
+- We need to design a **value sysytem** or an **object system**.
+- This sysytem defines what our **eval** function returns.
+- There are different ways to do this.
+- Some use the native types (integers, booleans) of the host language to represent values of the interpreted language not wrapped
+    in anything.
+
+## Foundation of our object system
+- Every value in Monkey will be represented as an **Type**, an interface of our design.
+
+## Evaluating expressions
+- The function signature is `func Eval(node ast.Node) object.Object`
+- Traverse the AST, and evaluate the nodes. 
+- **Self-evaluating expressions**
+    - **Integer literals and Boolean literals**
+    - ex:- single-line input `5`. This program consists of a single statement, an expression statement with an integer literal
+        as it's expression.
