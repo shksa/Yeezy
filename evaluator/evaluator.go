@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"github.com/shksa/monkey/ast"
 	"github.com/shksa/monkey/object"
 )
@@ -44,6 +46,9 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.ReturnStatementNode:
 		val := Eval(node.ReturnValue)
+		if isError(val) {
+			return val
+		}
 		return &object.ReturnValue{Value: val} // Need to keep track of return value so that we can decide later whether to stop evaluation or not
 
 	// Expressions
@@ -54,12 +59,23 @@ func Eval(node ast.Node) object.Object {
 		return nativeBoolToBooleanObject(node.Value)
 
 	case *ast.PrefixExpressionNode:
-		operandExpr := Eval(node.Right) // operandExpr may be object.Integer, object.Boolean, or object.Null
-		return evaluatePrefixExpression(node.Operator, operandExpr)
+		operand := Eval(node.Right) // operand may be object.Integer, object.Boolean, or object.Null, object.Error
+		if isError(operand) {
+			return operand
+		}
+		return evaluatePrefixExpression(node.Operator, operand)
 
 	case *ast.InfixExpressionNode:
-		leftOperand := Eval(node.Left)   // leftOperand may be object.Integer, object.Boolean, or object.Null
-		rightOperand := Eval(node.Right) // rightOperand may be object.Integer, object.Boolean, or object.Null
+		leftOperand := Eval(node.Left) // leftOperand may be object.Integer, object.Boolean, or object.Null, object.Error
+		if isError(leftOperand) {
+			return leftOperand
+		}
+
+		rightOperand := Eval(node.Right) // rightOperand may be object.Integer, object.Boolean, or object.Null, object.Error
+		if isError(rightOperand) {
+			return rightOperand
+		}
+
 		return evaluateInfixExpression(node.Operator, leftOperand, rightOperand)
 
 	case *ast.IfExpressionNode:
@@ -75,9 +91,12 @@ func evaluateProgram(stmtNodes []ast.StatementNode) object.Object {
 	for _, stmtNode := range stmtNodes {
 		result = Eval(stmtNode)
 
-		if returnValue, ok := result.(*object.ReturnValue); ok {
-			return returnValue.Value // The actual Object value is unwrapped from the returnValue.
-			// Evaluation of further statements is ended because a return statement is encountered.
+		switch result := result.(type) {
+		case *object.ReturnValue: // Evaluation of further statements is ended because a return statement is encountered.
+			return result.Value // The actual Object value is unwrapped from the object.ReturnValue.
+
+		case *object.Error: // Evaluation of further statements is ended because an error is encountered.
+			return result
 		}
 	}
 
@@ -100,7 +119,7 @@ func evaluatePrefixExpression(operator string, operand object.Object) object.Obj
 		return evaluateMinusPrefixOperatorExpression(operand)
 
 	default:
-		return NULL
+		return newError("unknown operator: %s%s", operator, operand.Type())
 	}
 }
 
@@ -122,7 +141,7 @@ func evaluateBangPrefixOperatorExpression(operand object.Object) *object.Boolean
 
 func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object {
 	if operand.Type() != object.INTEGER {
-		return NULL
+		return newError(`invalid prefix operator "-" for operand type %s`, operand.Type())
 	}
 	value := operand.(*object.Integer).Value
 
@@ -134,10 +153,13 @@ func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object 
 
 func evaluateInfixExpression(operator string, leftOperand, rightOperand object.Object) object.Object {
 	switch {
+	case leftOperand.Type() != rightOperand.Type():
+		return newError("operand type mismatch for operator %q : %s %s %s", operator, leftOperand.Type(), operator, rightOperand.Type())
+
 	case leftOperand.Type() == object.INTEGER && rightOperand.Type() == object.INTEGER:
 		return evaluateIntegerInfixExpression(operator, leftOperand, rightOperand)
 
-	// For the next cases, the leftOperand and rightOperand are *object.Boolean, either TRUE or FALSE
+	// For the next cases, the leftOperand and rightOperand are *object.Boolean, either TRUE or FALSE values
 	case operator == "==":
 		return nativeBoolToBooleanObject(leftOperand == rightOperand) // Pointer comparision to check for equality b/w 2 boolean object pointers.
 
@@ -145,7 +167,7 @@ func evaluateInfixExpression(operator string, leftOperand, rightOperand object.O
 		return nativeBoolToBooleanObject(leftOperand != rightOperand)
 
 	default:
-		return NULL
+		return newError("invalid operator %q between %s values: %s %s %s", operator, leftOperand.Type(), leftOperand.Inspect(), operator, rightOperand.Inspect())
 	}
 }
 
@@ -170,12 +192,16 @@ func evaluateIntegerInfixExpression(operator string, leftOperand, rightOperand o
 	case "!=":
 		return nativeBoolToBooleanObject(leftValue != rightValue)
 	default:
-		return NULL
+		return newError("invalid operator %q between %s values: %s %s %s", operator, leftOperand.Type(), leftValue, operator, rightValue)
 	}
 }
 
 func evaluateIfExpression(node *ast.IfExpressionNode) object.Object {
 	conditionValue := Eval(node.Condition)
+
+	if isError(conditionValue) {
+		return conditionValue
+	}
 
 	if isTruthy(conditionValue) {
 		return Eval(node.Consequence)
@@ -205,10 +231,24 @@ func evaluateBlockStatement(block *ast.BlockStatementNode) object.Object { // ca
 	for _, statement := range block.Statements {
 		result = Eval(statement)
 
-		if result != nil && result.Type() == object.RETURNVAL {
-			return result // The return value is not explicitly unwrapped and returned as is. (as *object.ReturnValue)
+		if result != nil {
+			resultType := result.Type()
+			if resultType == object.ERROROBJ || resultType == object.RETURNOBJ {
+				return result // The return value is not explicitly unwrapped and returned as is. (as *object.ReturnValue or *object.Error)
+			}
 		}
 	}
 
 	return result
+}
+
+func newError(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROROBJ
+	}
+	return false
 }

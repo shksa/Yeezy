@@ -144,7 +144,7 @@
     - We need to keep track of the return value so that we can later decide whether to stop evaluation or not.
 - **Program evaluation**
     - The statements are evaluated one-by-one.
-    - The only interesting thing in this routine is that, the result of each statement after it's evaluation, is type asserted
+    - The only interesting thing in this routine is that, the result of each statement after it's evaluation, is type-asserted
         with `object.ReturnValue` and if the assertion succeds, the evaluation of the remaining statements is skipped by returning
         the actual value that is wrapped by the `object.ReturnValue` from the evaluation function.
     - So when we have top-level statements such as
@@ -157,6 +157,12 @@
             5 * 8 + 9
         ```
     - The if-expression statememt is evaluated to a result that is of type `object.ReturnValue`.
-    - The evaluator for the program checks if the result values is of type `object.ReturnValue` and if it is, it unwraps the
-        actual value and return it, skipping the remaining statements in the program.
-    - Similar thing happens for a return statement
+    - The evaluator for the program checks if the result value is of type `object.ReturnValue` and if it is, it unwraps the
+        actual value it holds and return it, skipping the remaining statements in the program.
+    - Similar thing happens for a return statement.
+
+## Errors
+- Errors for wrong operators, unsupported operations, and other user or internal errors that may arise during execution.
+- Error handling is done similarly to return statement handling, because in both cases the after statements won't be evaluated.
+- An error object needs to be defined in Monkey, so that it can be tracked and we can later decide to stop the evaluation.
+- The `Eval` function needs to return the error to the repl, so an error object should be part of the object system of Monkey.

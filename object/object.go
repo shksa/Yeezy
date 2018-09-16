@@ -26,7 +26,8 @@ const (
 	INTEGER   = "INTEGER"
 	BOOLEAN   = "BOOLEAN"
 	NULL      = "NULL"
-	RETURNVAL = "RETURN_VALUE"
+	RETURNOBJ = "RETURN_VALUE"
+	ERROROBJ  = "ERROR"
 )
 
 /* Types in Monkey
@@ -72,7 +73,18 @@ type ReturnValue struct {
 }
 
 // Type returns the type's name
-func (rv *ReturnValue) Type() string { return RETURNVAL }
+func (rv *ReturnValue) Type() string { return RETURNOBJ }
 
 // Inspect returns the value in string format
 func (rv *ReturnValue) Inspect() string { return rv.Value.Inspect() }
+
+// Error is a type for representing all errors in Monkey lang.
+type Error struct {
+	Message string
+}
+
+// Type returns the type's name
+func (e *Error) Type() string { return ERROROBJ }
+
+// Inspect returns the value in string format
+func (e *Error) Inspect() string { return "Error: " + e.Message }
