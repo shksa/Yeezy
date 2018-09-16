@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/user"
 
+	"github.com/shksa/monkey/object"
+
 	"github.com/shksa/monkey/evaluator"
 	"github.com/shksa/monkey/parser"
 
@@ -34,6 +36,7 @@ const MONKEYFACE = `
 
 func start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 	for {
 		fmt.Printf(PROMPT)
 		didScan := scanner.Scan()
@@ -56,7 +59,7 @@ func start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")

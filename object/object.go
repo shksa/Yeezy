@@ -88,3 +88,24 @@ func (e *Error) Type() string { return ERROROBJ }
 
 // Inspect returns the value in string format
 func (e *Error) Inspect() string { return "Error: " + e.Message }
+
+// Environment is a type for representing the interpreter's environment.
+type Environment struct {
+	store map[string]Object
+}
+
+// NewEnvironment returns a pointer to a newly created Environment value.
+func NewEnvironment() *Environment {
+	e := &Environment{store: make(map[string]Object)}
+	return e
+}
+
+func (e *Environment) Get(name string) (Object, bool) {
+	obj, ok := e.store[name]
+	return obj, ok
+}
+
+func (e *Environment) Set(name string, val Object) Object {
+	e.store[name] = val
+	return val
+}

@@ -166,3 +166,5 @@
 - Error handling is done similarly to return statement handling, because in both cases the after statements won't be evaluated.
 - An error object needs to be defined in Monkey, so that it can be tracked and we can later decide to stop the evaluation.
 - The `Eval` function needs to return the error to the repl, so an error object should be part of the object system of Monkey.
+
+## Bindings and environment
