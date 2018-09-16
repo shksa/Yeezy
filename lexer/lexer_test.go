@@ -108,6 +108,7 @@ func TestNextToken(t *testing.T) {
 		token.ASSIGN,
 		{Type: "INT", Literal: "788"},
 		token.EOF,
+		token.EOF,
 	}
 
 	lexer := New(input)
@@ -135,6 +136,7 @@ func TestNextTokenSingleLineInput(t *testing.T) {
 		{Type: "IDENTIFIER", Literal: "five"},
 		token.ASSIGN,
 		{Type: "INT", Literal: "5"},
+		token.EOF,
 	}
 
 	lexer := New(input)
