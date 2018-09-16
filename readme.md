@@ -134,3 +134,5 @@
     - **Infix-expressions**
         - There are 8 infix operators in Monkey. They can be divided into 2 groups, one produces integer values
             the other produces boolean values
+    - **If-Else expression**
+        - In the condition of the if expression, anything other than NULL and false are evaluated to TRUE.

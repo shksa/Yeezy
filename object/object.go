@@ -56,7 +56,7 @@ func (b *Boolean) Inspect() string { return fmt.Sprintf("%t", b.Value) }
 func (b *Boolean) Type() string { return BOOLEAN }
 
 // Null is type for representing the absence of values in Monkey
-type Null struct{}
+type Null struct{} // Does not use Golang's nil to represent null values
 
 // Inspect returns the value in string format
 func (n *Null) Inspect() string { return "null" }

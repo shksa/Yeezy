@@ -16,8 +16,7 @@ var (
 - The Host language Golang knows how to perform integer arithmetic operations, so in evaluating Monkey code, we use Golang's operators
 	to perform the the operations.
 - Eval() on a node as a root of a branch evaluates the whole branch to a single value like an object.Integer value or a
-	object.Boolean value
-
+	object.Boolean value or a object.NULL value
 */
 
 // Eval takes in the AST and evaluates it, returning Monkey objects
@@ -30,6 +29,9 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.ExpressionStatementNode:
 		return Eval(node.Expression)
+
+	case *ast.BlockStatementNode:
+		return evaluateStatements(node.Statements)
 
 	// Expressions
 	case *ast.IntegerLiteralNode:
@@ -46,6 +48,9 @@ func Eval(node ast.Node) object.Object {
 		leftOperand := Eval(node.Left)   // leftOperand may be object.Integer, object.Boolean, or object.Null
 		rightOperand := Eval(node.Right) // rightOperand may be object.Integer, object.Boolean, or object.Null
 		return evaluateInfixExpression(node.Operator, leftOperand, rightOperand)
+
+	case *ast.IfExpressionNode:
+		return evaluateIfExpression(node)
 	}
 
 	return nil
@@ -92,7 +97,7 @@ func evaluateBangPrefixOperatorExpression(operand object.Object) *object.Boolean
 	case NULL:
 		return TRUE
 
-	default:
+	default: // For integers
 		return FALSE
 	}
 }
@@ -148,5 +153,30 @@ func evaluateIntegerInfixExpression(operator string, leftOperand, rightOperand o
 		return nativeBoolToBooleanObject(leftValue != rightValue)
 	default:
 		return NULL
+	}
+}
+
+func evaluateIfExpression(node *ast.IfExpressionNode) object.Object {
+	conditionValue := Eval(node.Condition)
+
+	if isTruthy(conditionValue) {
+		return Eval(node.Consequence)
+	} else if node.Alternative != nil {
+		return Eval(node.Alternative)
+	} else {
+		return NULL
+	}
+}
+
+func isTruthy(obj object.Object) bool {
+	switch obj {
+	case TRUE:
+		return true
+	case FALSE:
+		return false
+	case NULL:
+		return false
+	default:
+		return true
 	}
 }
