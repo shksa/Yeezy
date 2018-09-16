@@ -9,6 +9,7 @@ import (
 var (
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
+	NULL  = &object.Null{}
 )
 
 // Eval takes in the AST and evaluates it, returning Monkey objects
@@ -28,6 +29,10 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.BooleanNode:
 		return nativeBoolToBooleanObject(node.Value)
+
+	case *ast.PrefixExpressionNode:
+		operandExpr := Eval(node.Right) // operandExpr may be object.Integer, object.Boolean, or object.Null
+		return evaluatePrefixExpression(node.Operator, operandExpr)
 	}
 
 	return nil
@@ -48,4 +53,42 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 		return TRUE
 	}
 	return FALSE
+}
+
+func evaluatePrefixExpression(operator string, operand object.Object) object.Object {
+	switch operator {
+	case "!":
+		return evaluateBangPrefixOperatorExpression(operand)
+
+	case "-":
+		return evaluateMinusPrefixOperatorExpression(operand)
+
+	default:
+		return NULL
+	}
+}
+
+func evaluateBangPrefixOperatorExpression(operand object.Object) *object.Boolean {
+	switch operand {
+	case TRUE:
+		return FALSE
+
+	case FALSE:
+		return TRUE
+
+	case NULL:
+		return TRUE
+
+	default:
+		return FALSE
+	}
+}
+
+func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object {
+	if operand.Type() != object.INTEGER {
+		return NULL
+	}
+	value := operand.(*object.Integer).Value
+
+	return &object.Integer{Value: -value}
 }

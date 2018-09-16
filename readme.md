@@ -118,12 +118,13 @@
     in anything.
 
 ## Foundation of our object system
-- Every value in Monkey will be represented as an **Type**, an interface of our design.
+- Every value in Monkey will be represented as an **Object**, an interface of our design.
 
 ## Evaluating expressions
 - The function signature is `func Eval(node ast.Node) object.Object`
 - Traverse the AST, and evaluate the nodes. 
 - **Self-evaluating expressions**
     - **Integer literals and Boolean literals**
-    - ex:- single-line input `5`. This program consists of a single statement, an expression statement with an integer literal
-        as it's expression.
+        - ex:- single-line input `5`. This program consists of a single statement, an expression statement with an integer          literal as it's expression.
+    - **Prefix-expressions**
+        - The first step to evaluating a prefix expression is to evaluate its operand and then use the result of this evaluation with the operator
