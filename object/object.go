@@ -16,7 +16,7 @@ import (
 
 // Object is an interface which is implemented by all types in  Monkey lang.
 type Object interface {
-	Inspect() string // returns value of the object
+	Inspect() string // returns value of the object in string format
 	Type() string    // returns type of the object
 }
 

@@ -12,6 +12,12 @@ var (
 	NULL  = &object.Null{}
 )
 
+/* IMPORTANT
+- The Host language Golang knows how to perform integer arithmetic, so in evaluating Monkey code, we use Golang's operators
+	to perform the the operations.
+
+*/
+
 // Eval takes in the AST and evaluates it, returning Monkey objects
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
@@ -90,5 +96,7 @@ func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object 
 	}
 	value := operand.(*object.Integer).Value
 
-	return &object.Integer{Value: -value}
+	return &object.Integer{Value: -value} // This is where Go is performing the negation operation.
+	// ex:- for operand = 5, -5 is returned, for operand = -5, +5 is returned.
+	// Go knows how to do integer arithmetic, so we make Go do it.
 }

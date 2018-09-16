@@ -114,11 +114,14 @@
 - We need to design a **value sysytem** or an **object system**.
 - This sysytem defines what our **eval** function returns.
 - There are different ways to do this.
-- Some use the native types (integers, booleans) of the host language to represent values of the interpreted language not wrapped
-    in anything.
+- Some use the native types (integers, booleans) of the host language to represent values of the interpreted language not wrapped in anything.
 
 ## Foundation of our object system
 - Every value in Monkey will be represented as an **Object**, an interface of our design.
+- The values of monkey are are the values of the custom **Object** interface type.
+- Each value will also have a specific representation by custom struct types like **Integer**, **Boolean**.
+- So an integer in Monkey is a value of **Integer** struct, which implements the **Object** interface.
+- On the REPL, the integer value is shown by callong the **Inspect()** method of the **Integer** struct value.
 
 ## Evaluating expressions
 - The function signature is `func Eval(node ast.Node) object.Object`
@@ -127,4 +130,4 @@
     - **Integer literals and Boolean literals**
         - ex:- single-line input `5`. This program consists of a single statement, an expression statement with an integer          literal as it's expression.
     - **Prefix-expressions**
-        - The first step to evaluating a prefix expression is to evaluate its operand and then use the result of this evaluation with the operator
+        - The first step to evaluating a prefix expression is to evaluate its operand and then use the result of this evaluation with the operator.
