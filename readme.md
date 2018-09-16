@@ -131,3 +131,6 @@
         - ex:- single-line input `5`. This program consists of a single statement, an expression statement with an integer          literal as it's expression.
     - **Prefix-expressions**
         - The first step to evaluating a prefix expression is to evaluate its operand and then use the result of this evaluation with the operator.
+    - **Infix-expressions**
+        - There are 8 infix operators in Monkey. They can be divided into 2 groups, one produces integer values
+            the other produces boolean values

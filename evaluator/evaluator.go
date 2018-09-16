@@ -13,8 +13,10 @@ var (
 )
 
 /* IMPORTANT
-- The Host language Golang knows how to perform integer arithmetic, so in evaluating Monkey code, we use Golang's operators
+- The Host language Golang knows how to perform integer arithmetic operations, so in evaluating Monkey code, we use Golang's operators
 	to perform the the operations.
+- Eval() on a node as a root of a branch evaluates the whole branch to a single value like an object.Integer value or a
+	object.Boolean value
 
 */
 
@@ -39,6 +41,11 @@ func Eval(node ast.Node) object.Object {
 	case *ast.PrefixExpressionNode:
 		operandExpr := Eval(node.Right) // operandExpr may be object.Integer, object.Boolean, or object.Null
 		return evaluatePrefixExpression(node.Operator, operandExpr)
+
+	case *ast.InfixExpressionNode:
+		leftOperand := Eval(node.Left)   // leftOperand may be object.Integer, object.Boolean, or object.Null
+		rightOperand := Eval(node.Right) // rightOperand may be object.Integer, object.Boolean, or object.Null
+		return evaluateInfixExpression(node.Operator, leftOperand, rightOperand)
 	}
 
 	return nil
@@ -99,4 +106,38 @@ func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object 
 	return &object.Integer{Value: -value} // This is where Go is performing the negation operation.
 	// ex:- for operand = 5, -5 is returned, for operand = -5, +5 is returned.
 	// Go knows how to do integer arithmetic, so we make Go do it.
+}
+
+func evaluateInfixExpression(operator string, leftOperand, rightOperand object.Object) object.Object {
+	switch {
+	case leftOperand.Type() == object.INTEGER && rightOperand.Type() == object.INTEGER:
+		return evaluateIntegerInfixExpression(operator, leftOperand, rightOperand)
+	default:
+		return NULL
+	}
+}
+
+func evaluateIntegerInfixExpression(operator string, leftOperand, rightOperand object.Object) object.Object {
+	leftValue := leftOperand.(*object.Integer).Value
+	rightValue := rightOperand.(*object.Integer).Value
+	switch operator {
+	case "+":
+		return &object.Integer{Value: leftValue + rightValue} // Go is performing the addition operation.
+	case "-":
+		return &object.Integer{Value: leftValue - rightValue}
+	case "*":
+		return &object.Integer{Value: leftValue * rightValue}
+	case "/":
+		return &object.Integer{Value: leftValue / rightValue}
+	case "<":
+		return nativeBoolToBooleanObject(leftValue < rightValue)
+	case ">":
+		return nativeBoolToBooleanObject(leftValue > rightValue)
+	case "==":
+		return nativeBoolToBooleanObject(leftValue == rightValue)
+	case "!=":
+		return nativeBoolToBooleanObject(leftValue != rightValue)
+	default:
+		return NULL
+	}
 }

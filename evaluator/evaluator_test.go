@@ -8,6 +8,14 @@ import (
 	"github.com/shksa/monkey/parser"
 )
 
+func testEval(input string) object.Object {
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+
+	return Eval(program)
+}
+
 func TestIntegerExpressionEval(t *testing.T) {
 	tests := []struct {
 		input          string
@@ -17,20 +25,23 @@ func TestIntegerExpressionEval(t *testing.T) {
 		{"25", 25},
 		{"-5", -5},
 		{"-25", -25},
+		{"1 + 2 + 3", 6},
+		{"2 * 2 * 3", 12},
+		{"-50 + 0 + 50", 0},
+		{"5 * 2 + 1", 11},
+		{"5 + 2 * 10", 25},
+		{"20 + 2 * -10", 0},
+		{"50 / 2 * 2 + 10", 60},
+		{"2 * (5 + 10)", 30},
+		{"3 * 3 * 3 + 10", 37},
+		{"3 * (3 * 3) + 10", 37},
+		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
 	}
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		testIntegerObject(t, evaluated, tt.expectedOutput)
 	}
-}
-
-func testEval(input string) object.Object {
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-
-	return Eval(program)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -56,6 +67,14 @@ func TestBooleanExpressionEval(t *testing.T) {
 	}{
 		{"true", true},
 		{"false", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 < 1", false},
+		{"1 > 1", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 == 2", false},
+		{"1 != 2", true},
 	}
 
 	for _, tt := range tests {
