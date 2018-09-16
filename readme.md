@@ -86,3 +86,25 @@
         - `<parameters> := (<parameter1>, <parameter2>, <parameter3>, ...)`
     - **Call expressions**.
         - form - `Identifier or Function literal(<comma seperated expressions>)`
+
+## Fuzzy line b/w interpreters and compilers
+- The line between interpreters and compilers is a blurry one. 
+- The notion of an interpreter as something that doesn't leave executable artifacts behind (in contrast to a compiler, which does just that) gets fuzzy real fast when looking at the implementations of real-world and highly-optimized programming languages.
+
+## Evaluation
+- Tree-walking interpreter
+    - The most obvious and classical choice of what to do with the AST is to just interpret it. 
+    - Traverse the AST, visit each node and do what the node signifies: print a string, add two numbers, execute a function's body      all on the fly. 
+    - Interpreters working this way are called **"tree-walking interpreters"** and are the archetype of interpreters. 
+    - Sometimes their evaluation step is preceded by small optimizations that rewrite the AST (e.g. remove unused variable bindings) or convert it into another intermediate representation (IR) that's more suitable for recursive and repeated evaluation.
+- Bytecode emitter type 
+    - Instead of building an AST the parser emits bytecode directly. 
+    - Now, are we still talking about interpreters or compilers? Isn't emitting bytecode that gets then interpreted (or should we say "executed"?) a form of compilation? I told you: the line becomes blurry. 
+    - And to make it even more fuzzy, consider this: some implementations of programming languages parse the source code, build an AST and convert this AST to bytecode. 
+    - But instead of executing the operations specified by the bytecode directly in a virtual machine, the virtual machine then compiles the bytecode to native machine code, right before its executed - just in time. 
+    - That's called a JIT (for "just in time") interpreter/compiler. 
+- AST -> JIT
+    - They recursively traverse the AST but before executing a particular branch of it the node is compiled to native machine code. - And then executed. Again, "just in time".
+
+## Tree-walking interpreter
+- It take the AST our parser builds for us and interprets it "on the fly", without any preprocessing or compilation step.

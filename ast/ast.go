@@ -253,10 +253,11 @@ func (bs *BlockStatementNode) TokenLiteral() string { return bs.Token.Literal }
 func (bs *BlockStatementNode) statementNode()       {}
 func (bs *BlockStatementNode) String() string {
 	var out bytes.Buffer
-
+	out.WriteString("{\n")
 	for _, stmt := range bs.Statements {
 		out.WriteString(stmt.String())
 	}
+	out.WriteString("\n}")
 
 	return out.String()
 }
