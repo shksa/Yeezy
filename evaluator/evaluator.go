@@ -5,6 +5,12 @@ import (
 	"github.com/shksa/monkey/object"
 )
 
+// TRUE and False are refernences to the two boolean objects in Monkey
+var (
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+)
+
 // Eval takes in the AST and evaluates it, returning Monkey objects
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
@@ -21,7 +27,7 @@ func Eval(node ast.Node) object.Object {
 		return &object.Integer{Value: node.Value}
 
 	case *ast.BooleanNode:
-		return &object.Boolean{Value: node.Value}
+		return nativeBoolToBooleanObject(node.Value)
 	}
 
 	return nil
@@ -35,4 +41,11 @@ func evaluateStatements(stmtNodes []ast.StatementNode) object.Object {
 	}
 
 	return result
+}
+
+func nativeBoolToBooleanObject(input bool) *object.Boolean {
+	if input {
+		return TRUE
+	}
+	return FALSE
 }
