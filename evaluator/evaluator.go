@@ -103,7 +103,8 @@ func evaluateMinusPrefixOperatorExpression(operand object.Object) object.Object 
 	}
 	value := operand.(*object.Integer).Value
 
-	return &object.Integer{Value: -value} // This is where Go is performing the negation operation.
+	return &object.Integer{Value: -value}
+	// This is where Go is performing the negation operation.
 	// ex:- for operand = 5, -5 is returned, for operand = -5, +5 is returned.
 	// Go knows how to do integer arithmetic, so we make Go do it.
 }
@@ -112,6 +113,14 @@ func evaluateInfixExpression(operator string, leftOperand, rightOperand object.O
 	switch {
 	case leftOperand.Type() == object.INTEGER && rightOperand.Type() == object.INTEGER:
 		return evaluateIntegerInfixExpression(operator, leftOperand, rightOperand)
+
+	// For the next cases, the leftOperand and rightOperand are *object.Boolean, either TRUE or FALSE
+	case operator == "==":
+		return nativeBoolToBooleanObject(leftOperand == rightOperand) // Pointer comparision to check for equality b/w 2 boolean object pointers.
+
+	case operator == "!=":
+		return nativeBoolToBooleanObject(leftOperand != rightOperand)
+
 	default:
 		return NULL
 	}
