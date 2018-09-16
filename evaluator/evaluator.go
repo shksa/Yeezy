@@ -25,13 +25,17 @@ func Eval(node ast.Node) object.Object {
 
 	// Statements
 	case *ast.Program:
-		return evaluateStatements(node.Statements)
+		return evaluateProgram(node.Statements)
 
 	case *ast.ExpressionStatementNode:
 		return Eval(node.Expression)
 
 	case *ast.BlockStatementNode:
-		return evaluateStatements(node.Statements)
+		return evaluateBlockStatement(node)
+
+	case *ast.ReturnStatementNode:
+		val := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: val} // Need to keep track of return value so that we can decide later whether to stop evaluation or not
 
 	// Expressions
 	case *ast.IntegerLiteralNode:
@@ -56,11 +60,15 @@ func Eval(node ast.Node) object.Object {
 	return nil
 }
 
-func evaluateStatements(stmtNodes []ast.StatementNode) object.Object {
+func evaluateProgram(stmtNodes []ast.StatementNode) object.Object {
 	var result object.Object
 
 	for _, stmtNode := range stmtNodes {
 		result = Eval(stmtNode)
+
+		if returnValue, ok := result.(*object.ReturnValue); ok {
+			return returnValue.Value // Evaluation of further statements is ended because a return statement is encountered.
+		}
 	}
 
 	return result
@@ -179,4 +187,18 @@ func isTruthy(obj object.Object) bool {
 	default:
 		return true
 	}
+}
+
+func evaluateBlockStatement(block *ast.BlockStatementNode) object.Object {
+	var result object.Object
+
+	for _, statement := range block.Statements {
+		result = Eval(statement)
+
+		if result != nil && result.Type() == object.RETURNVAL {
+			return result // The return value is not explicitly unwrapped and returned as is. (as *object.ReturnValue)
+		}
+	}
+
+	return result
 }

@@ -123,7 +123,7 @@
 - So an integer in Monkey is a value of **Integer** struct, which implements the **Object** interface.
 - On the REPL, the integer value is shown by callong the **Inspect()** method of the **Integer** struct value.
 
-## Evaluating expressions
+## Evaluating expressions and statements
 - The function signature is `func Eval(node ast.Node) object.Object`
 - Traverse the AST, and evaluate the nodes. 
 - **Self-evaluating expressions**
@@ -136,3 +136,7 @@
             the other produces boolean values
     - **If-Else expression**
         - In the condition of the if expression, anything other than NULL and false are evaluated to TRUE.
+- **Return statements**
+    - Can be used as a top-level statement in the program.
+    - Statements after the it wont be evaluated.
+    - We need to keep track of the return value so that we can later decide whether to stop evaluation or not.

@@ -8,6 +8,7 @@ import (
 - Object is an abstraction for "data" in the lang.
 - An object will have a type and a value.
 - All the primitive and composite types of Monkey are the various "kinds" of the objects.
+- The "types" of Monkey are defined by various custom structure types in Go that implement the Object interface.
 - An Integer type in Monkey is an Object with a particular type name called "INTEGER" and can take all 64-bit integer values
 	of Golang.
 - A Boolean type in Monkey is an Object with a particular type name called "BOOLEAN" can take either the true or false boolean
@@ -20,17 +21,18 @@ type Object interface {
 	Type() string    // returns type of the object
 }
 
-// list of all the types in Monkey
+// list of all the types of Objects in Monkey
 const (
-	INTEGER = "INTEGER"
-	BOOLEAN = "BOOLEAN"
-	NULL    = "NULL"
+	INTEGER   = "INTEGER"
+	BOOLEAN   = "BOOLEAN"
+	NULL      = "NULL"
+	RETURNVAL = "RETURN_VALUE"
 )
 
 /* IMPORTANT
 - Every value has a different representation in the Host lang, so each type of value is represented by a struct.
 - Whenever interger literals are encountered in the source, they are turned into an ast.IntegerLiteral and then
-	when evaluating the AST node, we turn it into an value.Integer, saving the value inside the struct.
+	when evaluating the AST node, we turn it into an object.Integer, saving the value inside the struct.
 */
 
 // Integer is type for representing all integer literal values in the Monkey lang.
@@ -63,3 +65,14 @@ func (n *Null) Inspect() string { return "null" }
 
 // Type returns the type's name
 func (n *Null) Type() string { return NULL }
+
+// ReturnValue is a type that wraps an "Object" value
+type ReturnValue struct {
+	Value Object
+}
+
+// Type returns the type's name
+func (rv *ReturnValue) Type() string { return RETURNVAL }
+
+// Inspect returns the value in string format
+func (rv *ReturnValue) Inspect() string { return rv.Value.Inspect() }
