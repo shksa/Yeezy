@@ -52,11 +52,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.ReturnValue{Value: value} // Need to keep track of return value so that we can decide later whether to stop evaluation or not
 
 	case *ast.LetStatementNode:
-		value := Eval(node.Value, env)
+		value := Eval(node.Value, env) // evaluate the expression with the context of current environment.
 		if isError(value) {
 			return value
 		}
-		env.Set(node.Name.Value, value)
+		env.Set(node.Iden.Name, value)
 
 	// Expressions
 	case *ast.IntegerLiteralNode:
@@ -82,14 +82,30 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(rightOperand) {
 			return rightOperand
 		}
-
 		return evaluateInfixExpression(node.Operator, leftOperand, rightOperand)
 
 	case *ast.IfExpressionNode:
 		return evaluateIfExpression(node, env) // If-expression will return whatever its block statement will return.
 
 	case *ast.IdentifierNode:
-		return evaluateIdentifier(node, env) // returns object.Integer, object.Boolean
+		return evaluateIdentifier(node, env) // returns object.Integer, object.Boolean or object.Error
+
+	case *ast.FunctionLiteralNode:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Parameters: params, Body: body, Env: env} // A function has a reference to the env it is created in.
+
+	case *ast.CallExpressionNode:
+		functionObj := Eval(node.Function, env) // node.Function can be ast.FunctionNode or ast.IdentifierNode. IdentifierNode can evaluate to either a object.Function or any other object type
+		if isError(functionObj) {
+			return functionObj
+		}
+
+		args := evaluateExpressions(node.Arguments, env) // evaluate the arguments with context of the current environment
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+		return applyFunction(functionObj, args)
 	}
 
 	return nil
@@ -243,6 +259,7 @@ func evaluateBlockStatement(block *ast.BlockStatementNode, env *object.Environme
 
 		if result != nil {
 			resultType := result.Type()
+			// Blocks should return immediately when the evaluation of a stmt results in an error or a return value.
 			if resultType == object.ERROROBJ || resultType == object.RETURNOBJ {
 				return result // The return value is not explicitly unwrapped and returned as is. (as *object.ReturnValue or *object.Error)
 			}
@@ -263,10 +280,52 @@ func isError(obj object.Object) bool {
 	return false
 }
 
-func evaluateIdentifier(node *ast.IdentifierNode, env *object.Environment) object.Object {
-	value, ok := env.Get(node.Value)
+func evaluateIdentifier(idenNode *ast.IdentifierNode, env *object.Environment) object.Object {
+	value, ok := env.Get(idenNode.Name)
 	if !ok {
-		return newError("identifier not found: %s", node.Value)
+		return newError("identifier not found: %s", idenNode.Name)
 	}
 	return value
+}
+
+func evaluateExpressions(expressions []ast.ExpressionNode, env *object.Environment) []object.Object {
+	var result []object.Object
+
+	for _, exprNode := range expressions {
+		evaluated := Eval(exprNode, env)
+
+		if isError(evaluated) {
+			return append(result, evaluated)
+		}
+		result = append(result, evaluated)
+	}
+
+	return result
+}
+
+func applyFunction(funct object.Object, args []object.Object) object.Object {
+	functionObj, ok := funct.(*object.Function)
+	if !ok {
+		return newError("not a function %s", functionObj.Type())
+	}
+	extendedEnv := createExtendedFunctionEnv(functionObj, args)
+	evaluated := Eval(functionObj.Body, extendedEnv) // The function's body is evaluated with the new environment.
+	return unwrapReturnValue(evaluated)
+}
+
+func createExtendedFunctionEnv(functionObj *object.Function, args []object.Object) *object.Environment {
+	newEnv := object.NewEnclosedEnvironment(functionObj.Env)
+
+	for idx, param := range functionObj.Parameters {
+		newEnv.Set(param.Name, args[idx])
+	}
+
+	return newEnv
+}
+
+func unwrapReturnValue(obj object.Object) object.Object {
+	if returnValue, ok := obj.(*object.ReturnValue); ok {
+		return returnValue.Value
+	}
+	return obj
 }

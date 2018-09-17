@@ -62,7 +62,7 @@ func (p *Program) String() string {
 // LetStatementNode is a type for representing all "let" statements in AST. ex:= `let x = 5 * 6`
 type LetStatementNode struct {
 	Token token.Token // token.LET
-	Name  *IdentifierNode
+	Iden  *IdentifierNode
 	Value ExpressionNode
 }
 
@@ -76,7 +76,7 @@ func (ls *LetStatementNode) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(ls.TokenLiteral() + " ")
-	out.WriteString(ls.Name.String())
+	out.WriteString(ls.Iden.String())
 	out.WriteString(" = ")
 	out.WriteString(ls.Value.String())
 
@@ -88,7 +88,7 @@ func (ls *LetStatementNode) String() string {
 // IdentifierNode is a type for representing all "identifier" expressions in AST.
 type IdentifierNode struct {
 	Token token.Token // token.IDENTIFIER
-	Value string      // Value is the Token.Literal
+	Name  string      // Name is the Token.Literal
 }
 
 // *LetStatementNode implements ExpressionNode interface.
@@ -97,7 +97,7 @@ func (i *IdentifierNode) expressionNode() {}
 // TokenLiteral returns the IdentifierNode's token literal.
 func (i *IdentifierNode) TokenLiteral() string { return i.Token.Literal }
 
-func (i *IdentifierNode) String() string { return i.Value }
+func (i *IdentifierNode) String() string { return i.Name }
 
 // ReturnStatementNode is a type for representing all "return" statements in AST. ex:- return 777
 type ReturnStatementNode struct {
@@ -253,11 +253,11 @@ func (bs *BlockStatementNode) TokenLiteral() string { return bs.Token.Literal }
 func (bs *BlockStatementNode) statementNode()       {}
 func (bs *BlockStatementNode) String() string {
 	var out bytes.Buffer
-	out.WriteString("{\n")
+	out.WriteString("{")
 	for _, stmt := range bs.Statements {
 		out.WriteString(stmt.String())
 	}
-	out.WriteString("\n}")
+	out.WriteString("}")
 
 	return out.String()
 }

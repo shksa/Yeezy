@@ -12,13 +12,13 @@ func TestString(t *testing.T) {
 		Statements: []StatementNode{
 			&LetStatementNode{
 				Token: token.LET,
-				Name: &IdentifierNode{
+				Iden: &IdentifierNode{
 					Token: token.Token{Type: "IDENTIFIER", Literal: "myVar"},
-					Value: "myVar",
+					Name:  "myVar",
 				},
 				Value: &IdentifierNode{
 					Token: token.Token{Type: "IDENTIFIER", Literal: "anotherVar"},
-					Value: "anotherVar",
+					Name:  "anotherVar",
 				},
 			},
 		},

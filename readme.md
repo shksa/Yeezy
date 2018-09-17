@@ -124,6 +124,8 @@
 - On the REPL, the integer value is shown by callong the **Inspect()** method of the **Integer** struct value.
 
 ## Evaluating expressions and statements
+- The job of an evaluator is to evaluate expressions/statements and build objects.
+- **AST nodes -> Objects**
 - The function signature is `func Eval(node ast.Node) object.Object`
 - Traverse the AST, and evaluate the nodes. 
 - **Self-evaluating expressions**
@@ -161,10 +163,32 @@
         actual value it holds and return it, skipping the remaining statements in the program.
     - Similar thing happens for a return statement.
 
-## Errors
+## Error handling
 - Errors for wrong operators, unsupported operations, and other user or internal errors that may arise during execution.
 - Error handling is done similarly to return statement handling, because in both cases the after statements won't be evaluated.
 - An error object needs to be defined in Monkey, so that it can be tracked and we can later decide to stop the evaluation.
 - The `Eval` function needs to return the error to the repl, so an error object should be part of the object system of Monkey.
 
 ## Bindings and environment
+- Hash map of strings to objects, where the strings are identifier names.
+- REPL should maintain a single environment in it's lifetime.
+
+## Functions and function literals
+- The evaluator should evaluate function literals and build `object.Function`s.
+- The function object is built with the current environment as its `Env` field value.
+- So a function object carries the env in which it was created.
+- **Extending the environment for evaluating the function's body**
+    - Extending the environment means that we create a new instance of `object.Environment` with a pointer to the environment it should extend.
+    -   ```   
+            let i = 5;
+            let printNum = fn(i) {
+            puts(i);
+            };
+
+            printNum(10); // 10
+            puts(i); // 5
+        ```
+    - **By doing that we enclose a fresh and empty environment with an existing one.**
+    - When the new environment's Get method is called and it itself doesn't have a value associated with the given name, it calls the Get of the enclosing environment. That's the environment it's extending.
+    - And if that enclosing environment can't find the value, it calls its own enclosing environment and so on until there is no enclosing environment anymore and we can safely say that we have an `"ERROR: unknown identifier: foobar"`.
+- **So to evaluate a function call, a new environment needs to be created everytime which extends the env of the function, not the current environment because when evaluating the function, we need to extend the **

@@ -137,7 +137,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatementNode {
 		return nil
 	}
 
-	letStmt.Name = &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
+	letStmt.Iden = &ast.IdentifierNode{Token: p.curToken, Name: p.curToken.Literal}
 
 	if isRead := p.expectAndReadNextTokenToBe(token.ASSIGN); !isRead {
 		return nil
@@ -275,7 +275,7 @@ func (p *Parser) parseExpression(precedence int) ast.ExpressionNode {
 }
 
 func (p *Parser) parseIdentifier() ast.ExpressionNode {
-	return &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
+	return &ast.IdentifierNode{Token: p.curToken, Name: p.curToken.Literal}
 }
 
 func (p *Parser) parseIntegerLiteral() ast.ExpressionNode {
@@ -412,7 +412,7 @@ func (p *Parser) parseFunctionLiteralExpression() ast.ExpressionNode {
 
 	funcExpr.Body = p.parseBlockStatement()
 
-	return funcExpr
+	return funcExpr // p.curToken is at "}"
 }
 
 func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
@@ -428,7 +428,7 @@ func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
 		return nil
 	}
 
-	ident := &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal} // 1 param case
+	ident := &ast.IdentifierNode{Token: p.curToken, Name: p.curToken.Literal} // 1 param case
 
 	identifiers = append(identifiers, ident)
 
@@ -437,7 +437,7 @@ func (p *Parser) parseFunctionParameters() []*ast.IdentifierNode {
 		if isRead := p.expectAndReadNextTokenToBe(token.IDENTIFIER); !isRead {
 			return nil
 		}
-		ident := &ast.IdentifierNode{Token: p.curToken, Value: p.curToken.Literal}
+		ident := &ast.IdentifierNode{Token: p.curToken, Name: p.curToken.Literal}
 
 		identifiers = append(identifiers, ident)
 	}

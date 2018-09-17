@@ -1,7 +1,11 @@
 package object
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
+
+	"github.com/shksa/monkey/ast"
 )
 
 /* Why Object?
@@ -28,6 +32,7 @@ const (
 	NULL      = "NULL"
 	RETURNOBJ = "RETURN_VALUE"
 	ERROROBJ  = "ERROR"
+	FUNCTION  = "FUNCTION"
 )
 
 /* Types in Monkey
@@ -91,21 +96,61 @@ func (e *Error) Inspect() string { return "Error: " + e.Message }
 
 // Environment is a type for representing the interpreter's environment.
 type Environment struct {
-	store map[string]Object
+	store    map[string]Object
+	outerEnv *Environment
 }
 
 // NewEnvironment returns a pointer to a newly created Environment value.
 func NewEnvironment() *Environment {
-	e := &Environment{store: make(map[string]Object)}
+	e := &Environment{store: make(map[string]Object), outerEnv: nil}
 	return e
 }
 
+// Get returns the object mapped to a identifier in the current environemnt or in any of the enclosing environments.
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
+	if !ok && e.outerEnv != nil { // If the current env has an outer env, that outer env is checked for the binding.
+		obj, ok = e.outerEnv.Get(name) // Recursively checks all the enclosing envs of the current env to find the binding.
+	}
 	return obj, ok
 }
 
+// Set maps a identifier name to an object
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val
+}
+
+// Function is a type for representing all the function literal values in Monkey.
+type Function struct {
+	Parameters []*ast.IdentifierNode
+	Body       *ast.BlockStatementNode
+	Env        *Environment // functions carry their environment with them
+}
+
+// Type returns the type's name
+func (f *Function) Type() string { return FUNCTION }
+
+// Inspect returns the value in string format
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("func")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(f.Body.String())
+
+	return out.String()
+}
+
+// NewEnclosedEnvironment return a new environment that extends the current enclosing environment.
+func NewEnclosedEnvironment(outerEnv *Environment) *Environment {
+	newEnv := NewEnvironment()
+	newEnv.outerEnv = outerEnv
+	return newEnv
 }

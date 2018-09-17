@@ -51,7 +51,7 @@ func testLetStatement(t *testing.T, stmt ast.StatementNode, name string, value i
 		return false
 	}
 
-	if !testIdentifier(t, letStmt.Name, name) {
+	if !testIdentifier(t, letStmt.Iden, name) {
 		return false
 	}
 
@@ -152,8 +152,8 @@ func testIdentifier(t *testing.T, exp ast.ExpressionNode, value string) bool {
 		return false
 	}
 
-	if ident.Value != value {
-		t.Errorf("ident.Value not %s. got=%s", value, ident.Value)
+	if ident.Name != value {
+		t.Errorf("ident.Name not %s. got=%s", value, ident.Name)
 		return false
 	}
 
