@@ -308,8 +308,8 @@ func applyFunction(funct object.Object, args []object.Object) object.Object {
 	if !ok {
 		return newError("not a function %s", functionObj.Type())
 	}
-	extendedEnv := createExtendedFunctionEnv(functionObj, args)
-	evaluated := Eval(functionObj.Body, extendedEnv) // The function's body is evaluated with the new environment.
+	extendedEnv := createExtendedFunctionEnv(functionObj, args) // creates a new env for the function that has a ref to the function's creation env
+	evaluated := Eval(functionObj.Body, extendedEnv)            // The function's body is evaluated with the new environment.
 	return unwrapReturnValue(evaluated)
 }
 
