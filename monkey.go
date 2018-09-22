@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
 
 	"github.com/shksa/monkey/object"
 
@@ -14,6 +17,10 @@ import (
 	"github.com/shksa/monkey/parser"
 
 	"github.com/shksa/monkey/lexer"
+)
+
+var (
+	fileNamePtr = flag.String("file", "", "name of file to interpret")
 )
 
 // PROMPT is the prompt message for the repl.
@@ -73,7 +80,7 @@ func start(in io.Reader, out io.Writer) {
 	}
 }
 
-func main() {
+func runREPL() {
 	user, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +88,41 @@ func main() {
 	fmt.Printf("Hello %s! This is the monkey programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
 	start(os.Stdin, os.Stdout)
+}
+
+func runProgramFile(fileName string) {
+	fileContent, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	env := object.NewEnvironment()
+	l := lexer.New(string(fileContent))
+	p := parser.New(l)
+	program := p.ParseProgram()
+
+	if len(p.Errors) != 0 {
+		printParseErrors(p.Errors)
+		return
+	}
+
+	evaluated := evaluator.Eval(program, env)
+	fmt.Println(evaluated.Inspect())
+}
+
+func main() {
+	flag.Parse()
+	fileName := *fileNamePtr
+	if fileName == "" {
+		runREPL()
+	} else {
+		extOfFileName := filepath.Ext(fileName)
+		if extOfFileName != ".mky" {
+			fmt.Printf("Invalid file extention: Not a monkey file. got=%q \n", extOfFileName)
+			return
+		}
+		runProgramFile(fileName)
+	}
 }
 
 func printParseErrors(errors []string) {

@@ -1,0 +1,13 @@
+let makeGreeter = func(greet) {
+  func(name) {
+    greet + "! " + name
+  }
+}
+
+let hello = makeGreeter("hello")
+
+let howdy = makeGreeter("howdy")
+
+hello("joe rogan")
+
+howdy("bobby lee")
