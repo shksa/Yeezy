@@ -106,6 +106,22 @@ func testStringObject(t *testing.T, obj object.Object, expected string) bool {
 	return true
 }
 
+func TestStringConcatenationEval(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedOutput string
+	}{
+		{`"hello" + " " + "world!"`, "hello world!"},
+		{`""+""`, ""},
+		{`" "+" "`, "  "},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expectedOutput)
+	}
+}
+
 func TestBooleanExpressionEval(t *testing.T) {
 	tests := []struct {
 		input          string
@@ -279,6 +295,22 @@ func TestErrorHandling(t *testing.T) {
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			`5 + "hello"`,
+			`operand type mismatch for operator "+" : INTEGER + STRING`,
+		},
+		{
+			`true + "hello"`,
+			`operand type mismatch for operator "+" : BOOLEAN + STRING`,
+		},
+		{
+			`false + "hello"`,
+			`operand type mismatch for operator "+" : BOOLEAN + STRING`,
+		},
+		{
+			`"world" - "hello"`,
+			`invalid operator "-" between STRING values: world - hello`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -291,7 +323,7 @@ func TestErrorHandling(t *testing.T) {
 		}
 
 		if errObj.Message != tt.expectedMessage {
-			t.Errorf("wrong error message. expected=%q, got=%q", tt.expectedMessage, errObj.Message)
+			t.Errorf("wrong error message. expected=%s, got=%s", tt.expectedMessage, errObj.Message)
 		}
 	}
 }

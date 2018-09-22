@@ -189,6 +189,9 @@ func evaluateInfixExpression(operator string, leftOperand, rightOperand object.O
 	case leftOperand.Type() == object.INTEGER && rightOperand.Type() == object.INTEGER:
 		return evaluateIntegerInfixExpression(operator, leftOperand, rightOperand)
 
+	case leftOperand.Type() == object.STRING && rightOperand.Type() == object.STRING:
+		return evaluateStringInfixExpression(operator, leftOperand, rightOperand)
+
 	// For the next cases, the leftOperand and rightOperand are *object.Boolean, either TRUE or FALSE values
 	case operator == "==":
 		return nativeBoolToBooleanObject(leftOperand == rightOperand) // Pointer comparision to check for equality b/w 2 boolean object pointers.
@@ -221,6 +224,17 @@ func evaluateIntegerInfixExpression(operator string, leftOperand, rightOperand o
 		return nativeBoolToBooleanObject(leftValue == rightValue)
 	case "!=":
 		return nativeBoolToBooleanObject(leftValue != rightValue)
+	default:
+		return newError("invalid operator %q between %s values: %s %s %s", operator, leftOperand.Type(), leftValue, operator, rightValue)
+	}
+}
+
+func evaluateStringInfixExpression(operator string, leftOperand, rightOperand object.Object) object.Object {
+	leftValue := leftOperand.(*object.String).Value
+	rightValue := rightOperand.(*object.String).Value
+	switch operator {
+	case "+":
+		return &object.String{Value: leftValue + rightValue}
 	default:
 		return newError("invalid operator %q between %s values: %s %s %s", operator, leftOperand.Type(), leftValue, operator, rightValue)
 	}
