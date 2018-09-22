@@ -67,8 +67,8 @@ func start(in io.Reader, out io.Writer) {
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
-			io.WriteString(out, program.String())
-			io.WriteString(out, "\n")
+			// io.WriteString(out, program.String())
+			// io.WriteString(out, "\n")
 		}
 	}
 }

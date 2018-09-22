@@ -44,6 +44,7 @@ var (
 	// Identifiers + Literals
 	IDENTIFIER = Token{Type: "IDENTIFIER"} // add, foobar, x, y, ...
 	INT        = Token{Type: "INT"}        // 23, 4343, 989898
+	STRING     = Token{Type: "STRING"}
 
 	// Special tokens
 	ILLEGAL = Token{Type: "ILLEGAL"}

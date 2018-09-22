@@ -8,6 +8,9 @@ import (
 	"github.com/shksa/monkey/lexer"
 )
 
+type IdentifierLiteral string
+type StringLiteral string
+
 func TestLetStatements(t *testing.T) {
 	tests := []struct {
 		input              string
@@ -19,7 +22,8 @@ func TestLetStatements(t *testing.T) {
 		{"let foobar = 838383;", "foobar", 838383},
 		{"let youUgly = true", "youUgly", true},
 		{"let youFat = false;", "youFat", false},
-		{"let foo = bar;", "foo", "bar"},
+		{"let foo = bar;", "foo", IdentifierLiteral("bar")},
+		{`let foo = "bar"`, "foo", StringLiteral("bar")},
 	}
 
 	for _, tt := range tests {
@@ -67,10 +71,10 @@ func TestReturnStatements(t *testing.T) {
 		input              string
 		expectedExpression string
 	}{
-		{"return 5;", "5"},
-		{"return 5 + 10;", "10"},
+		{"return 5", "5"},
 		{"return true", "true"},
 		{"return foo", "foo"},
+		{`return "foo"`, "foo"},
 		{"return add(1 + 2, 3, 4)", "add((1 + 2), 3, 4)"},
 	}
 
@@ -91,20 +95,21 @@ func TestReturnStatements(t *testing.T) {
 	}
 }
 
-func testReturnStatement(t *testing.T, stmt ast.StatementNode, expectedExprStr string) bool {
+func testReturnStatement(t *testing.T, stmtNode ast.StatementNode, expectedExprStr string) bool {
 
-	if stmt.TokenLiteral() != "return" {
-		t.Errorf("stmt.TokenLiteral not 'return'. got=%q", stmt.TokenLiteral())
+	if stmtNode.TokenLiteral() != "return" {
+		t.Errorf("stmtNode.TokenLiteral not 'return'. got=%q", stmtNode.TokenLiteral())
 		return false
 	}
 
-	retStmt, ok := stmt.(*ast.ReturnStatementNode)
+	retStmtNode, ok := stmtNode.(*ast.ReturnStatementNode)
 	if !ok {
-		t.Errorf("stmt not *ast.ReturnStatementNode. got=%T", stmt)
+		t.Errorf("stmtNode not *ast.ReturnStatementNode. got=%T", stmtNode)
 		return false
 	}
 
-	if retStmt.ReturnValue.String() != expectedExprStr {
+	if retStmtNode.ReturnValue.String() != expectedExprStr {
+		t.Errorf("retStmtNode.ReturnValue.String() not %q. got=%q", expectedExprStr, retStmtNode.ReturnValue.String())
 		return false
 	}
 
@@ -186,14 +191,16 @@ func testBooleanLiteral(t *testing.T, exp ast.ExpressionNode, value bool) bool {
 	return true
 }
 
-func testLiteralExpression(t *testing.T, exp ast.ExpressionNode, expected interface{}) bool {
-	switch v := expected.(type) {
+func testLiteralExpression(t *testing.T, exp ast.ExpressionNode, expectedValue interface{}) bool {
+	switch v := expectedValue.(type) {
 	case int:
 		return testIntegerLiteral(t, exp, int64(v))
 	case int64:
 		return testIntegerLiteral(t, exp, v)
-	case string:
-		return testIdentifier(t, exp, v)
+	case IdentifierLiteral:
+		return testIdentifier(t, exp, string(v))
+	case StringLiteral:
+		return testStringLiteral(t, exp, string(v))
 	case bool:
 		return testBooleanLiteral(t, exp, v)
 	}
@@ -517,7 +524,7 @@ func TestIfExpressions(t *testing.T) {
 		t.Fatalf("exprStmt.Expression not a *ast.IfExpressionNode. got=%T", exprStmt.Expression)
 	}
 
-	if !testInfixExpression(t, ifExpr.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, ifExpr.Condition, IdentifierLiteral("x"), "<", IdentifierLiteral("y")) {
 		return
 	}
 
@@ -561,7 +568,7 @@ func TestIfElseExpressions(t *testing.T) {
 		t.Fatalf("exprStmt.Expression not a *ast.IfExpressionNode. got=%T", exprStmt.Expression)
 	}
 
-	if !testInfixExpression(t, ifExpr.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, ifExpr.Condition, IdentifierLiteral("x"), "<", IdentifierLiteral("y")) {
 		return
 	}
 
@@ -632,7 +639,7 @@ func TestFunctionLiteralExpression(t *testing.T) {
 		t.Fatalf("funcExpr body stmt is not ast.ExpressionStatement. got=%T", funcExpr.Body.Statements[0])
 	}
 
-	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+	testInfixExpression(t, bodyStmt.Expression, IdentifierLiteral("x"), "+", IdentifierLiteral("y"))
 
 }
 
@@ -729,4 +736,46 @@ func TestCallExpressionArgumentsParsing(t *testing.T) {
 			}
 		}
 	}
+}
+
+func testStringLiteral(t *testing.T, exp ast.ExpressionNode, value string) bool {
+	stringNode, ok := exp.(*ast.StringLiteralNode)
+	if !ok {
+		t.Fatalf("exp is not a *ast.StringLiteralNode. got=%T \n", exp)
+		return false
+	}
+
+	if stringNode.Value != value {
+		t.Errorf("stringNode.Value is not %q. got=%q \n", value, stringNode.Value)
+		return false
+	}
+
+	if stringNode.TokenLiteral() != value {
+		t.Errorf("stringNode.TokenLiteral() is not %q. got=%q \n", value, stringNode.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
+func TestStringLiteralExpression(t *testing.T) {
+	input := `
+	"foo bar"
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
+	}
+
+	empStmt, ok := program.Statements[0].(*ast.ExpressionStatementNode)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatementNode. got=%T", program.Statements[0])
+	}
+
+	testStringLiteral(t, empStmt.Expression, "foo bar")
 }

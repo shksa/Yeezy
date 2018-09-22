@@ -1,9 +1,17 @@
 ## Type of interpreter that i will build
-- It's called a **tree-walk** interpreter.
+- It's called a **tree-walking** interpreter.
 - The interpreter will read the source code, parse it into a AST and then evaluate the AST.
+
+## Host language
+- Ultimately, we are writing a "Go program" which takes monkey source code as string, processes it and returns some values.
+- So the interpreter for Monkey is just another Go program.
+- All the data-types and values intended to be in the Monkey lang are implemented by the data-types of Go.
+- So integers, booleans, strings of Monkey are implemented as integers, booleans, strings of Go.
 
 ## Lexer
 - Takes source code as input and generates tokens as output that represent the source code.
+- A lexer should'nt care about any errors relating to sequence of the legal characters.
+- It should create tokens for EVERYTHING in the input, even the illegal characters should be tokenized.
 
 ## Parser
 - A parser takes source code as input (either as text or tokens) and produce a data structure which represents this source code.
@@ -91,7 +99,7 @@
 - The line between interpreters and compilers is a blurry one. 
 - The notion of an interpreter as something that doesn't leave executable artifacts behind (in contrast to a compiler, which does just that) gets fuzzy real fast when looking at the implementations of real-world and highly-optimized programming languages.
 
-## Evaluation
+## Interpreter types
 - Tree-walking interpreter
     - The most obvious and classical choice of what to do with the AST is to just interpret it. 
     - Traverse the AST, visit each node and do what the node signifies: print a string, add two numbers, execute a function's body      all on the fly. 
@@ -112,7 +120,7 @@
 ## Representing Monkey values in Host language
 - We need a way to represent values of Monkey in the Host language.
 - We need to design a **value sysytem** or an **object system**.
-- This sysytem defines what our **eval** function returns.
+- This system defines what our **eval** function returns.
 - There are different ways to do this.
 - Some use the native types (integers, booleans) of the host language to represent values of the interpreted language not wrapped in anything.
 
@@ -191,4 +199,4 @@
     - **By doing that we enclose a fresh and empty environment with an existing one.**
     - When the new environment's Get method is called and it itself doesn't have a value associated with the given name, it calls the Get of the enclosing environment. That's the environment it's extending.
     - And if that enclosing environment can't find the value, it calls its own enclosing environment and so on until there is no enclosing environment anymore and we can safely say that we have an `"ERROR: unknown identifier: foobar"`.
-- **So to evaluate a function call, a new environment needs to be created everytime which extends the env of the function, not the current environment because when evaluating the function, we need to extend the **
+- **So to evaluate a function call, a new environment needs to be created everytime which extends the env of the function, not the current environment because when evaluating the function, we need the binding of the environment in which the function was created**

@@ -16,6 +16,21 @@ func testEval(input string) object.Object {
 	return Eval(program, newEnv)
 }
 
+func testObject(t *testing.T, evaluatedObj object.Object, expectedValue interface{}) bool {
+	switch value := expectedValue.(type) {
+	case int:
+		return testIntegerObject(t, evaluatedObj, int64(value))
+	case bool:
+		return testBooleanObject(t, evaluatedObj, value)
+	case string:
+		return testStringObject(t, evaluatedObj, value)
+	case nil:
+		return testNullObject(t, evaluatedObj)
+	}
+	t.Errorf("type of object not handled. got=%T \n", evaluatedObj)
+	return false
+}
+
 func TestIntegerExpressionEval(t *testing.T) {
 	tests := []struct {
 		input          string
@@ -54,6 +69,37 @@ func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 
 	if result.Value != expected {
 		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
+		return false
+	}
+
+	return true
+}
+
+func TestStringExpressionEval(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedOutput string
+	}{
+		{`"foo"`, "foo"},
+		{`"foo bar"`, "foo bar"},
+		{`""`, ""},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expectedOutput)
+	}
+}
+
+func testStringObject(t *testing.T, obj object.Object, expected string) bool {
+	strObj, ok := obj.(*object.String)
+	if !ok {
+		t.Errorf("obj is not *object.String. got=%T (%+v) \n", obj, obj)
+		return false
+	}
+
+	if strObj.Value != expected {
+		t.Errorf("strObj.Value is not %q. got=%q \n", expected, strObj.Value)
 		return false
 	}
 
@@ -139,15 +185,13 @@ func TestIfElseExpression(t *testing.T) {
 		{"if (1 > 2) { 10 }", nil},
 		{"if (1 > 2) { 10 } else { 20 }", 20},
 		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{`if (true) {"hello"}`, "hello"},
 	}
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		integer, ok := tt.expected.(int)
-		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
-		} else {
-			testNullObject(t, evaluated)
+		if !testObject(t, evaluated, tt.expected) {
+			return
 		}
 	}
 }
@@ -159,7 +203,7 @@ func testNullObject(t *testing.T, obj object.Object) bool {
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected interface{}
 	}{
 		{"return 10;", 10},
 		{"return 10; 9;", 10},
@@ -169,18 +213,25 @@ func TestReturnStatements(t *testing.T) {
 			`
 			if (10 > 1) {
 				if (10 > 1) {
-				return 10;
+					return 10;
 				}
 				return 1;
 			}
 			`,
 			10,
 		},
+		{`return true`, true},
+		{`return false`, false},
+		{`return "10"`, "10"},
+		{`return "abc100"`, "abc100"},
+		{`return ""`, ""},
 	}
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		testIntegerObject(t, evaluated, tt.expected)
+		if !testObject(t, evaluated, tt.expected) {
+			return
+		}
 	}
 }
 
@@ -248,16 +299,22 @@ func TestErrorHandling(t *testing.T) {
 func TestLetStatements(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected interface{}
 	}{
 		{"let a = 5; a;", 5},
 		{"let a = 5 * 5; a;", 25},
 		{"let a = 5; let b = a; b;", 5},
 		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
+		{"let isFat = true; isFat;", true},
+		{`let foo = "bar"; foo;`, "bar"},
+		{`let foo = ""; foo;`, ""},
 	}
 
 	for _, tt := range tests {
-		testIntegerObject(t, testEval(tt.input), tt.expected)
+		evaluated := testEval(tt.input)
+		if !testObject(t, evaluated, tt.expected) {
+			return
+		}
 	}
 }
 

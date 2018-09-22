@@ -65,6 +65,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.BooleanNode:
 		return nativeBoolToBooleanObject(node.Value)
 
+	case *ast.StringLiteralNode:
+		return &object.String{Value: node.Value}
+
 	case *ast.PrefixExpressionNode:
 		operand := Eval(node.Right, env) // operand may be object.Integer, object.Boolean, or object.Null, object.Error
 		if isError(operand) {

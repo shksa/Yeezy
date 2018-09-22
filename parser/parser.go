@@ -27,6 +27,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.ParseFnForPrefixToken = make(map[string]prefixTokenParseFn) // Need to assign a non-nil map, otherwise cannot assign to a nil nap.
 	p.registerParseFuncForPrefixToken(token.IDENTIFIER, p.parseIdentifier)
 	p.registerParseFuncForPrefixToken(token.INT, p.parseIntegerLiteral)
+	p.registerParseFuncForPrefixToken(token.STRING, p.parseStringLiteral)
 	p.registerParseFuncForPrefixToken(token.BANG, p.parsePrefixExpression)
 	p.registerParseFuncForPrefixToken(token.MINUS, p.parsePrefixExpression)
 	p.registerParseFuncForPrefixToken(token.TRUE, p.parseBooleanLiteral)
@@ -491,4 +492,9 @@ func (p *Parser) parseCallArguments() []ast.ExpressionNode {
 	}
 
 	return args // p.curToken is token.RPAREN ")"
+}
+
+func (p *Parser) parseStringLiteral() ast.ExpressionNode {
+	stringNode := &ast.StringLiteralNode{Token: p.curToken, Value: p.curToken.Literal}
+	return stringNode
 }

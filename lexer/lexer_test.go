@@ -26,6 +26,8 @@ func TestNextToken(t *testing.T) {
 	5 == 5;
 	5 != 10;
 	let x = 788
+	"foo"
+	"foo bar"
 	`
 	// No semicolon for the last line
 	// tests is a list of output expectations.
@@ -107,6 +109,8 @@ func TestNextToken(t *testing.T) {
 		{Type: "IDENTIFIER", Literal: "x"},
 		token.ASSIGN,
 		{Type: "INT", Literal: "788"},
+		{Type: "STRING", Literal: "foo"},
+		{Type: "STRING", Literal: "foo bar"},
 		token.EOF,
 		token.EOF,
 	}
@@ -128,8 +132,8 @@ func TestNextToken(t *testing.T) {
 
 func TestNextTokenSingleLineInput(t *testing.T) {
 	input := `
-	let five = 5`
-
+	let five = 5
+	`
 	// tests is a list of output expectations.
 	tests := []token.Token{
 		token.LET,

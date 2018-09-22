@@ -19,7 +19,7 @@ import (
 	values of Golang.
 */
 
-// Object is an interface which is implemented by all types in  Monkey lang.
+// Object is an interface which is implemented by all objects in Monkey lang.
 type Object interface {
 	Inspect() string // returns value of the object in string format
 	Type() string    // returns type of the object
@@ -29,6 +29,7 @@ type Object interface {
 const (
 	INTEGER   = "INTEGER"
 	BOOLEAN   = "BOOLEAN"
+	STRING    = "STRING"
 	NULL      = "NULL"
 	RETURNOBJ = "RETURN_VALUE"
 	ERROROBJ  = "ERROR"
@@ -41,7 +42,7 @@ const (
 	when evaluating the AST node, we turn it into an object.Integer, saving the value inside the struct.
 */
 
-// Integer is type for representing all integer literal values in the Monkey lang.
+// Integer is type for representing all integer literal objects in the Monkey lang.
 type Integer struct {
 	Value int64
 }
@@ -52,7 +53,7 @@ func (i *Integer) Inspect() string { return fmt.Sprintf("%d", i.Value) }
 // Type returns the type's name
 func (i *Integer) Type() string { return INTEGER }
 
-// Boolean is type for representing all boolean literal values in the Monkey lang.
+// Boolean is type for representing all boolean literal objects in the Monkey lang.
 type Boolean struct {
 	Value bool
 }
@@ -62,6 +63,17 @@ func (b *Boolean) Inspect() string { return fmt.Sprintf("%t", b.Value) }
 
 // Type returns the type's name
 func (b *Boolean) Type() string { return BOOLEAN }
+
+// String is a type for representing all string literal objects in the Monkey lang.
+type String struct {
+	Value string
+}
+
+// Inspect returns the value in string format
+func (s *String) Inspect() string { return s.Value }
+
+// Type returns the type's name
+func (s *String) Type() string { return STRING }
 
 // Null is type for representing the absence of values in Monkey
 type Null struct{} // Does not use Golang's nil to represent null values

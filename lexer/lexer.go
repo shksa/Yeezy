@@ -5,7 +5,7 @@ import "github.com/shksa/monkey/token"
 // Lexer is the object which generates tokens from source code.
 type Lexer struct {
 	input        string
-	position     int  // points to current char
+	position     int  // points to the current character lexer has read.
 	nextPosition int  // points to next char
 	ch           byte // current char under examination
 }
@@ -93,6 +93,9 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.LT
 	case '>':
 		tok = token.GT
+	case '"':
+		tok = token.STRING
+		tok.Literal = l.readString()
 	case 0:
 		tok = token.EOF
 	default:
@@ -109,7 +112,9 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Literal = string(l.ch)
 		}
 	}
+
 	l.readNextChar()
+
 	return tok
 }
 
@@ -151,4 +156,15 @@ func isLetter(ch byte) bool {
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func (l *Lexer) readString() string {
+	startPos := l.position + 1
+	for {
+		l.readNextChar()
+		if l.ch == '"' {
+			break
+		}
+	}
+	return l.input[startPos:l.position]
 }
