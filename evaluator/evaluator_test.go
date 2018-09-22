@@ -201,6 +201,7 @@ func TestIfElseExpression(t *testing.T) {
 		{"if (1 > 2) { 10 }", nil},
 		{"if (1 > 2) { 10 } else { 20 }", 20},
 		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{"if (5 == 5) { true }", true},
 		{`if (true) {"hello"}`, "hello"},
 	}
 
@@ -340,6 +341,7 @@ func TestLetStatements(t *testing.T) {
 		{"let isFat = true; isFat;", true},
 		{`let foo = "bar"; foo;`, "bar"},
 		{`let foo = ""; foo;`, ""},
+		{`let message = "hello" + " " + "world!"; message`, "hello world!"},
 	}
 
 	for _, tt := range tests {
@@ -379,7 +381,7 @@ func TestFunctionObject(t *testing.T) {
 func TestFunctionApplication(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected interface{}
 	}{
 		{"let identity = func(x) { x; }; identity(5);", 5},
 		{"let identity = func(a) { return a; }; identity(5);", 5},
@@ -387,10 +389,15 @@ func TestFunctionApplication(t *testing.T) {
 		{"let add = func(c, d) { c + d; }; add(5, 5);", 10},
 		{"let add = func(e, f) { e + f; }; add(5 + 5, add(5, 5));", 20},
 		{"func(g) { g; }(5)", 5},
+		{"let isFat = func(weight) { if(weight > 50) { true } }; isFat(55)", true},
+		{`func(message) { message }("hello" + " " + "world!")`, "hello world!"},
 	}
 
 	for _, tt := range tests {
-		testIntegerObject(t, testEval(tt.input), tt.expected)
+		evaluated := testEval(tt.input)
+		if !testObject(t, evaluated, tt.expected) {
+			return
+		}
 	}
 }
 

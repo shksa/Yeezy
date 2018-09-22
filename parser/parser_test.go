@@ -65,7 +65,6 @@ func testLetStatement(t *testing.T, stmt ast.StatementNode, name string, value i
 
 	return true
 }
-
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input              string
