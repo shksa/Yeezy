@@ -312,6 +312,14 @@ func TestErrorHandling(t *testing.T) {
 			`"world" - "hello"`,
 			`invalid operator "-" between STRING values: world - hello`,
 		},
+		{
+			`len(5)`,
+			`len doesn'nt support the given argument. got=INTEGER`,
+		},
+		{
+			`len("foo", "bar")`,
+			`Wrong number of arguments. want=1, got=2`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -413,4 +421,20 @@ func TestClosures(t *testing.T) {
 	`
 
 	testIntegerObject(t, testEval(input), 4)
+}
+
+func TestLenBuiltInFunction(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedOutput int64
+	}{
+		{`let msg = "hello world"; len(msg)`, 11},
+		{`let msg = ""; len(msg)`, 0},
+		{`let msg = "a"; len(msg)`, 1},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expectedOutput)
+	}
 }

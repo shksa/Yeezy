@@ -109,6 +109,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
+
 		return applyFunction(functionObj, args)
 	}
 
@@ -299,11 +300,15 @@ func isError(obj object.Object) bool {
 }
 
 func evaluateIdentifier(idenNode *ast.IdentifierNode, env *object.Environment) object.Object {
-	value, ok := env.Get(idenNode.Name)
-	if !ok {
-		return newError("identifier not found: %s", idenNode.Name)
+	if value, ok := env.Get(idenNode.Name); ok {
+		return value
 	}
-	return value
+
+	if builtInFunc, ok := builtins[idenNode.Name]; ok {
+		return builtInFunc
+	}
+
+	return newError("identifier not found: %s", idenNode.Name)
 }
 
 func evaluateExpressions(expressions []ast.ExpressionNode, env *object.Environment) []object.Object {
@@ -324,15 +329,22 @@ func evaluateExpressions(expressions []ast.ExpressionNode, env *object.Environme
 // The eval. of function call only depends on the env where the function is created, not the env in which
 // the call is evaluated. So the env in which function call is evaluated is irrelavent to the function's body evaluation.
 func applyFunction(funct object.Object, args []object.Object) object.Object {
-	functionObj, ok := funct.(*object.Function)
-	if !ok {
-		return newError("not a function %s", functionObj.Type())
+	switch fnObj := funct.(type) {
+
+	case *object.Function:
+		extendedEnv := createExtendedFunctionEnv(fnObj, args) // creates a new env for the function that has a ref to an env in which the function was created.
+		evaluated := Eval(fnObj.Body, extendedEnv)            // The function's body is evaluated with the new environment.
+		return unwrapReturnValue(evaluated)
+		// Need to unwrap a return value because otherwise it will bubble up through several function calls
+		// and stop the execution in all of them. We only want to stop the execution of the last called function's body.
+
+	case object.BuiltInFunction:
+		return fnObj(args...)
+
 	}
-	extendedEnv := createExtendedFunctionEnv(functionObj, args) // creates a new env for the function that has a ref to an env in which the function was created.
-	evaluated := Eval(functionObj.Body, extendedEnv)            // The function's body is evaluated with the new environment.
-	return unwrapReturnValue(evaluated)
-	// Need to unwrap a return value because otherwise it will bubble up through several function calls
-	// and stop the execution in all of them. We only want to stop the execution of the last called function's body.
+
+	return newError("not a function %s", funct.Type())
+
 }
 
 func createExtendedFunctionEnv(functionObj *object.Function, args []object.Object) *object.Environment {

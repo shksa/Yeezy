@@ -190,7 +190,7 @@
     -   ```   
             let i = 5;
             let printNum = fn(i) {
-            puts(i);
+                puts(i);
             };
 
             printNum(10); // 10
@@ -200,3 +200,14 @@
     - When the new environment's Get method is called and it itself doesn't have a value associated with the given name, it calls the Get of the enclosing environment. That's the environment it's extending.
     - And if that enclosing environment can't find the value, it calls its own enclosing environment and so on until there is no enclosing environment anymore and we can safely say that we have an `"ERROR: unknown identifier: foobar"`.
 - **So to evaluate a function call, a new environment needs to be created everytime which extends the env of the function, not the current environment because when evaluating the function, we need the binding of the environment in which the function was created**
+
+## Built-in Functions
+- They are not written in Monkey.
+- Written in Host lang.
+- These are functions built into the interpreter, into the language itself.
+- These functions act as a bridge b/w the Monkey world and the interpreter implementation.
+- They need to accept zero or more Objects as arguments and return an Object.
+
+## A type for built-in functions?
+- A special type is defined for builtin functions in the Object system.
+- Because all bulit-in functions have the same behavior -> take zero or more Objects as arguments and return an Object.

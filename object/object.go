@@ -27,13 +27,14 @@ type Object interface {
 
 // list of all the types of Objects in Monkey
 const (
-	INTEGER   = "INTEGER"
-	BOOLEAN   = "BOOLEAN"
-	STRING    = "STRING"
-	NULL      = "NULL"
-	RETURNOBJ = "RETURN_VALUE"
-	ERROROBJ  = "ERROR"
-	FUNCTION  = "FUNCTION"
+	INTEGER         = "INTEGER"
+	BOOLEAN         = "BOOLEAN"
+	STRING          = "STRING"
+	NULL            = "NULL"
+	RETURNOBJ       = "RETURN_VALUE"
+	ERROROBJ        = "ERROR"
+	FUNCTION        = "FUNCTION"
+	BUILTINFUNCTION = "BUILTIN_FUNCTION"
 )
 
 /* Types in Monkey
@@ -166,3 +167,12 @@ func NewEnclosedEnvironment(outerEnv *Environment) *Environment {
 	newEnv.outerEnv = outerEnv
 	return newEnv
 }
+
+// BuiltInFunction is a type for all representing all the built-in functions
+type BuiltInFunction func(...Object) Object
+
+// Inspect returns the value in string format
+func (bf BuiltInFunction) Inspect() string { return "built-in function" }
+
+// Type returns the type's name
+func (bf BuiltInFunction) Type() string { return BUILTINFUNCTION }
