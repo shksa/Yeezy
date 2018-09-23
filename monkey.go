@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -83,17 +82,25 @@ func start(in io.Reader, out io.Writer) {
 func runREPL() {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 	fmt.Printf("Hello %s! This is the monkey programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
 	start(os.Stdin, os.Stdout)
 }
 
-func runProgramFile(fileName string) {
-	fileContent, err := ioutil.ReadFile(fileName)
+func runProgramFile(filePath string) {
+	fileExtention := filepath.Ext(filePath)
+	if fileExtention != ".mky" {
+		fmt.Printf("Invalid file extention: Not a monkey file. got=%q \n", fileExtention)
+		return
+	}
+
+	fileContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	env := object.NewEnvironment()
@@ -111,17 +118,11 @@ func runProgramFile(fileName string) {
 }
 
 func main() {
-	flag.Parse()
-	fileName := *fileNamePtr
-	if fileName == "" {
+	cmdArgs := os.Args
+	if len(cmdArgs) == 1 {
 		runREPL()
 	} else {
-		extOfFileName := filepath.Ext(fileName)
-		if extOfFileName != ".mky" {
-			fmt.Printf("Invalid file extention: Not a monkey file. got=%q \n", extOfFileName)
-			return
-		}
-		runProgramFile(fileName)
+		runProgramFile(cmdArgs[1])
 	}
 }
 
