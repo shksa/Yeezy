@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/shksa/monkey/token"
+import "github.com/shksa/yeezy/token"
 
 // Lexer is the object which generates tokens from source code.
 type Lexer struct {

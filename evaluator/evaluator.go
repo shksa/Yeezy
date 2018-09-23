@@ -3,11 +3,11 @@ package evaluator
 import (
 	"fmt"
 
-	"github.com/shksa/monkey/ast"
-	"github.com/shksa/monkey/object"
+	"github.com/shksa/yeezy/ast"
+	"github.com/shksa/yeezy/object"
 )
 
-// TRUE and False are refernences to the two boolean objects in Monkey
+// TRUE and False are refernences to the two boolean objects in yeezy
 var (
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
@@ -15,7 +15,7 @@ var (
 )
 
 /* IMPORTANT
-- The Host language Golang knows how to perform integer arithmetic operations, so in evaluating Monkey code, we use Golang's operators
+- The Host language Golang knows how to perform integer arithmetic operations, so in evaluating yeezy code, we use Golang's operators
 	to perform the the operations.
 - Eval() on a node as a root of a branch evaluates the whole branch to a single value like an object.Integer value or a
 	object.Boolean value or a object.NULL value
@@ -30,7 +30,7 @@ var (
 - In the top-level, the object.ReturnValue it will be unwrapped to get the actual value and will be returned to the user.
 */
 
-// Eval takes in the AST and evaluates it, returning Monkey objects
+// Eval takes in the AST and evaluates it, returning yeezy objects
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 

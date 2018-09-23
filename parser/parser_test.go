@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/shksa/monkey/ast"
-	"github.com/shksa/monkey/lexer"
+	"github.com/shksa/yeezy/ast"
+	"github.com/shksa/yeezy/lexer"
 )
 
 type IdentifierLiteral string

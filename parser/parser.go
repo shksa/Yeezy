@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/shksa/monkey/ast"
-	"github.com/shksa/monkey/lexer"
-	"github.com/shksa/monkey/token"
+	"github.com/shksa/yeezy/ast"
+	"github.com/shksa/yeezy/lexer"
+	"github.com/shksa/yeezy/token"
 )
 
 // Parser is a type for representing the parser object.

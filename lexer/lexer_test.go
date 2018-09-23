@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/shksa/monkey/token"
+	"github.com/shksa/yeezy/token"
 )
 
 func TestNextToken(t *testing.T) {

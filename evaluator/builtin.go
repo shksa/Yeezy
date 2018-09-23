@@ -1,7 +1,7 @@
 package evaluator
 
 import (
-	"github.com/shksa/monkey/object"
+	"github.com/shksa/yeezy/object"
 )
 
 var builtins = map[string]object.BuiltInFunction{

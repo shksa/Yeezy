@@ -3,10 +3,10 @@
 - The interpreter will read the source code, parse it into a AST and then evaluate the AST.
 
 ## Host language
-- Ultimately, we are writing a "Go program" which takes monkey source code as string, processes it and returns some values.
-- So the interpreter for Monkey is just another Go program.
-- All the data-types and values intended to be in the Monkey lang are implemented by the data-types of Go.
-- So integers, booleans, strings of Monkey are implemented as integers, booleans, strings of Go.
+- Ultimately, we are writing a "Go program" which takes Yeezy source code as string, processes it and returns some values.
+- So the interpreter for Yeezy is just another Go program.
+- All the data-types and values intended to be in the Yeezy lang are implemented by the data-types of Go.
+- So integers, booleans, strings of Yeezy are implemented as integers, booleans, strings of Go.
 
 ## Lexer
 - Takes source code as input and generates tokens as output that represent the source code.
@@ -20,25 +20,25 @@
 - Semicolons, newlines, whitespace, comments, braces, bracket and parentheses -- depending on the language and the parser, these details are not represented in the AST, but merely guide the parser when constructing it.
 
 ## Nodes in AST
-- Nodes in AST of Monkey can be of 2 types.
+- Nodes in AST of Yeezy can be of 2 types.
     - **Statement**
     - **Expression**
 
 ## Statements and Expressions.
-- ***Programs in Monkey are a series of statements.***
+- ***Programs in Yeezy are a series of statements.***
 - A **let** statement has the form ```let <identifier> = <expression>```
 - A **return** statement has the form ```return <expression>```
-- ***There are only 2 types of statements in Monkey, a let statement and a return statement***.
+- ***There are only 2 types of statements in Yeezy, a let statement and a return statement***.
 - ***The rest of the language consists of expressions***.
 - **Statements vs Expressions**
     - Expressions produce values. ```ex:- 5, 10, add(5, 10)```
     - Statements do not produce values. ```ex:- return 5, let x = 5```
     - Depends on the language though.
-- **A lot of things in monkey are expressions including function literals**.
+- **A lot of things in Yeezy are expressions including function literals**.
 
 ## Expression Statements
 - ***An expression statement is a top-level statement that consists solely of one expression.***
-- We need it because it's totally legal in Monkey to write the following
+- We need it because it's totally legal in Yeezy to write the following
     ```
     let x = 5;
     x * 5 + 10;
@@ -72,7 +72,7 @@
     - **Integer literals**
         - The value they produce is the integer itself.
     - **Prefix-Operators** or **Prefix-Expressions**
-        - There are 2 prefix operators in Monkey:- `!` and `-`.
+        - There are 2 prefix operators in Yeezy:- `!` and `-`.
         - Usage:
             ```
             -5;
@@ -86,7 +86,7 @@
     - **Boolean literals**
     - **Grouped expressions**
     - **If expressions**
-        - In Monkey, if-else conditionals are expressions.
+        - In Yeezy, if-else conditionals are expressions.
         - They have the form `if (<condition>) <consequence> else <alternative>`
     - **Function literals**
         - The only way to define functions.
@@ -117,18 +117,18 @@
 ## Tree-walking interpreter
 - It take the AST our parser builds for us and interprets it "on the fly", without any preprocessing or compilation step.
 
-## Representing Monkey values in Host language
-- We need a way to represent values of Monkey in the Host language.
+## Representing Yeezy values in Host language
+- We need a way to represent values of Yeezy in the Host language.
 - We need to design a **value sysytem** or an **object system**.
 - This system defines what our **eval** function returns.
 - There are different ways to do this.
 - Some use the native types (integers, booleans) of the host language to represent values of the interpreted language not wrapped in anything.
 
 ## Foundation of our object system
-- Every value in Monkey will be represented as an **Object**, an interface of our design.
-- The values of monkey are are the values of the custom **Object** interface type.
+- Every value in Yeezy will be represented as an **Object**, an interface of our design.
+- The values of Yeezy are are the values of the custom **Object** interface type.
 - Each value will also have a specific representation by custom struct types like **Integer**, **Boolean**.
-- So an integer in Monkey is a value of **Integer** struct, which implements the **Object** interface.
+- So an integer in Yeezy is a value of **Integer** struct, which implements the **Object** interface.
 - On the REPL, the integer value is shown by callong the **Inspect()** method of the **Integer** struct value.
 
 ## Evaluating expressions and statements
@@ -142,7 +142,7 @@
     - **Prefix-expressions**
         - The first step to evaluating a prefix expression is to evaluate its operand and then use the result of this evaluation with the operator.
     - **Infix-expressions**
-        - There are 8 infix operators in Monkey. They can be divided into 2 groups, one produces integer values
+        - There are 8 infix operators in Yeezy. They can be divided into 2 groups, one produces integer values
             the other produces boolean values
     - **If-Else expression**
         - In the condition of the if expression, anything other than NULL and false are evaluated to TRUE.
@@ -174,8 +174,8 @@
 ## Error handling
 - Errors for wrong operators, unsupported operations, and other user or internal errors that may arise during execution.
 - Error handling is done similarly to return statement handling, because in both cases the after statements won't be evaluated.
-- An error object needs to be defined in Monkey, so that it can be tracked and we can later decide to stop the evaluation.
-- The `Eval` function needs to return the error to the repl, so an error object should be part of the object system of Monkey.
+- An error object needs to be defined in Yeezy, so that it can be tracked and we can later decide to stop the evaluation.
+- The `Eval` function needs to return the error to the repl, so an error object should be part of the object system of Yeezy.
 
 ## Bindings and environment
 - Hash map of strings to objects, where the strings are identifier names.
@@ -202,12 +202,13 @@
 - **So to evaluate a function call, a new environment needs to be created everytime which extends the env of the function, not the current environment because when evaluating the function, we need the binding of the environment in which the function was created**
 
 ## Built-in Functions
-- They are not written in Monkey.
+- They are not written in Yeezy.
 - Written in Host lang.
 - These are functions built into the interpreter, into the language itself.
-- These functions act as a bridge b/w the Monkey world and the interpreter implementation.
+- These functions act as a bridge b/w the Yeezy world and the interpreter implementation.
 - They need to accept zero or more Objects as arguments and return an Object.
 
 ## A type for built-in functions?
 - A special type is defined for builtin functions in the Object system.
+- They need to exposed to users of Yeezy as objects.
 - Because all bulit-in functions have the same behavior -> take zero or more Objects as arguments and return an Object.

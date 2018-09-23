@@ -10,12 +10,12 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/shksa/monkey/object"
+	"github.com/shksa/yeezy/object"
 
-	"github.com/shksa/monkey/evaluator"
-	"github.com/shksa/monkey/parser"
+	"github.com/shksa/yeezy/evaluator"
+	"github.com/shksa/yeezy/parser"
 
-	"github.com/shksa/monkey/lexer"
+	"github.com/shksa/yeezy/lexer"
 )
 
 var (
@@ -85,15 +85,15 @@ func runREPL() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Hello %s! This is the monkey programming language!\n", user.Username)
+	fmt.Printf("Hello %s! This is the Yeezy programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
 	start(os.Stdin, os.Stdout)
 }
 
 func runProgramFile(filePath string) {
 	fileExtention := filepath.Ext(filePath)
-	if fileExtention != ".mky" {
-		fmt.Printf("Invalid file extention: Not a monkey file. got=%q \n", fileExtention)
+	if fileExtention != ".yz" {
+		fmt.Printf("Invalid file extention: Not a Yeezy file. got=%q \n", fileExtention)
 		return
 	}
 

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/shksa/monkey/token"
+	"github.com/shksa/yeezy/token"
 )
 
 // Node is an interface type for representing the interface for all nodes in the AST
@@ -25,7 +25,7 @@ type ExpressionNode interface {
 	expressionNode()
 }
 
-// A Program in Monkey is a series of statements.
+// A Program in yeezy is a series of statements.
 // This Program node will be root of the AST.
 // Program is a type for representing the whole program tree.
 type Program struct {
