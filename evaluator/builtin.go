@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"github.com/shksa/yeezy/object"
 )
 
@@ -17,5 +19,16 @@ var builtins = map[string]object.BuiltInFunction{
 		default:
 			return newError("len doesn'nt support the given argument. got=%s", args[0].Type())
 		}
+	},
+	"print": func(args ...object.Object) object.Object {
+
+		for _, arg := range args {
+			switch arg := arg.(type) {
+			case *object.String:
+				fmt.Println(arg.Inspect())
+			}
+		}
+
+		return NULL
 	},
 }

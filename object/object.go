@@ -168,7 +168,7 @@ func NewEnclosedEnvironment(outerEnv *Environment) *Environment {
 	return newEnv
 }
 
-// BuiltInFunction is a type for all representing all the built-in functions
+// BuiltInFunction is a type for all representing all the built-in functions, it is an object that is exposed to the users of yeezy
 type BuiltInFunction func(...Object) Object
 
 // Inspect returns the value in string format
